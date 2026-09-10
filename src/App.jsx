@@ -10,7 +10,8 @@ import FacultyLogin from './components/FacultyLogin';
 import { DEFAULT_TEXT_CONFIG } from './constants/defaultConfig';
 import { PRESETS } from './constants/presets';
 import { createDefaultTemplateDataUrl } from './utils/defaultTemplateGenerator';
-import { generateVerificationCode } from './utils/qrGenerator';
+import { generateVerificationCode, getVerificationUrl } from './utils/qrGenerator';
+import { saveCertificate } from './services/supabase';
 import geetaLogo from './assets/geeta_logo_transparent.png';
 import { 
   Award, 
@@ -72,18 +73,24 @@ export default function App() {
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
 
-  // Sync route from URL on mount and browser back/forward
+  // Sync route from URL on mount and browser back/forward (Preserving exact code casing)
   useEffect(() => {
     const parseUrlRoute = () => {
-      const path = window.location.pathname.toLowerCase();
+      const originalPath = window.location.pathname;
+      const path = originalPath.toLowerCase();
       const params = new URLSearchParams(window.location.search);
 
       if (path === '/admin' || path.startsWith('/admin/') || params.get('admin') === 'true') {
         setRoute('admin');
-      } else if (path.startsWith('/verify/') || params.has('verify')) {
-        const codeFromPath = path.startsWith('/verify/') ? path.replace('/verify/', '').trim() : '';
-        const codeFromQuery = params.get('verify') || '';
-        const targetCode = decodeURIComponent(codeFromPath || codeFromQuery);
+      } else if (path.startsWith('/verify/') || params.has('verify') || path === '/verify') {
+        let rawCode = '';
+        if (path.startsWith('/verify/')) {
+          // Extract from original path to preserve exact uppercase casing
+          rawCode = originalPath.substring(8).trim();
+        } else if (params.has('verify')) {
+          rawCode = params.get('verify') || '';
+        }
+        const targetCode = decodeURIComponent(rawCode).trim();
         setVerifyCode(targetCode);
         setRoute('verify');
       } else {
@@ -95,6 +102,20 @@ export default function App() {
     window.addEventListener('popstate', parseUrlRoute);
     return () => window.removeEventListener('popstate', parseUrlRoute);
   }, []);
+
+  // Auto-sync active certificate to Supabase & LocalStorage cache in real-time
+  useEffect(() => {
+    if (!formData || !formData.verification_code) return;
+    const timer = setTimeout(() => {
+      const verifyUrl = getVerificationUrl(formData.verification_code, formData);
+      saveCertificate({
+        ...formData,
+        qr_code: verifyUrl
+      }).catch(err => console.warn('Auto-save notice:', err));
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [formData]);
 
   // Sync URL when route state changes
   const navigateTo = (newRoute, param = '') => {

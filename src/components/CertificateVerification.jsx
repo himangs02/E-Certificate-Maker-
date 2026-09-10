@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { getCertificateByCode } from '../services/supabase';
+import { getCertificateByCode, saveCertificate } from '../services/supabase';
+import { decodeCertificateData } from '../utils/qrGenerator';
 import geetaLogo from '../assets/geeta_logo_transparent.png';
 import { 
   CheckCircle2, 
@@ -25,22 +26,47 @@ export default function CertificateVerification({ verificationCode, onBackToStud
   const [searched, setSearched] = useState(false);
 
   useEffect(() => {
-    if (verificationCode) {
-      loadCertificate(verificationCode);
+    // 1. Check if there's encoded data in URL query params (?d=...)
+    let embeddedCert = null;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const encodedPayload = params.get('d');
+      if (encodedPayload) {
+        embeddedCert = decodeCertificateData(encodedPayload);
+      }
+    } catch (err) {
+      console.warn('URL payload parse error:', err);
+    }
+
+    const codeToSearch = verificationCode || embeddedCert?.verification_code || '';
+    if (codeToSearch || embeddedCert) {
+      loadCertificate(codeToSearch, embeddedCert);
     } else {
       setLoading(false);
     }
   }, [verificationCode]);
 
-  const loadCertificate = async (codeToFind) => {
+  const loadCertificate = async (codeToFind, fallbackPayload = null) => {
     setLoading(true);
     setSearched(true);
     try {
-      const data = await getCertificateByCode(codeToFind);
+      const cleanCode = (codeToFind || '').trim();
+      let data = cleanCode ? await getCertificateByCode(cleanCode) : null;
+
+      // If database didn't have it, but we have fallbackPayload from URL:
+      if (!data && fallbackPayload) {
+        data = fallbackPayload;
+        // Auto-save this certificate to database/localStorage so future queries find it immediately
+        saveCertificate(fallbackPayload).catch(err => console.warn('Sync notice:', err));
+      }
+
       setCert(data);
+      if (data?.verification_code) {
+        setSearchCode(data.verification_code);
+      }
     } catch (err) {
-      console.error(err);
-      setCert(null);
+      console.error('Error loading certificate:', err);
+      setCert(fallbackPayload || null);
     } finally {
       setLoading(false);
     }
@@ -49,7 +75,7 @@ export default function CertificateVerification({ verificationCode, onBackToStud
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchCode.trim()) {
-      loadCertificate(searchCode.trim());
+      loadCertificate(searchCode.trim(), null);
     }
   };
 

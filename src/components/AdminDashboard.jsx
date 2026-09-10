@@ -26,7 +26,8 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  Filter
+  Filter,
+  Database
 } from 'lucide-react';
 
 export default function AdminDashboard({ onLogout, onBackToStudio, onOpenVerify }) {
@@ -38,6 +39,8 @@ export default function AdminDashboard({ onLogout, onBackToStudio, onOpenVerify 
   const [sortBy, setSortBy] = useState('dept-asc'); // 'dept-asc' | 'dept-desc' | 'date-desc' | 'date-asc' | 'name-asc'
   const [selectedQr, setSelectedQr] = useState(null); // { cert, qrDataUrl }
   const [copiedCode, setCopiedCode] = useState(null);
+  const [showSqlModal, setShowSqlModal] = useState(false);
+  const [copiedSql, setCopiedSql] = useState(false);
   
   const [deptCount, setDeptCount] = useState(() => getDepartments().length);
   const [facCount, setFacCount] = useState(() => getFacultyUsers().length);
@@ -193,6 +196,15 @@ export default function AdminDashboard({ onLogout, onBackToStudio, onOpenVerify 
           </div>
 
           <div className="flex items-center gap-2 sm:gap-2.5">
+            <button
+              onClick={() => setShowSqlModal(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-900/60 transition-all cursor-pointer shadow-xs"
+              title="View & Copy Supabase SQL Table Schema"
+            >
+              <Database className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Database Setup</span>
+            </button>
+
             <button
               onClick={onBackToStudio}
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-stone-100/90 hover:bg-stone-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-700 transition-all cursor-pointer shadow-xs"
@@ -553,6 +565,119 @@ export default function AdminDashboard({ onLogout, onBackToStudio, onOpenVerify 
                 className="px-3 py-2 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl text-xs font-medium transition-all"
               >
                 Copy Link
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Supabase Database Setup SQL Modal */}
+      {showSqlModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white dark:bg-zinc-900 border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl w-full max-w-2xl shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div className="p-4 px-6 border-b border-stone-200/80 dark:border-zinc-800/80 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                  <Database className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Supabase Database Setup</h3>
+                  <p className="text-xs text-zinc-500">Run this SQL in your Supabase SQL Editor to enable persistent cross-device verification</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowSqlModal(false)}
+                className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 rounded-lg hover:bg-stone-100 dark:hover:bg-zinc-800"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-5 overflow-y-auto space-y-3 text-xs">
+              <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-xl text-amber-800 dark:text-amber-300">
+                <strong>Quick Setup:</strong> Open your <a href="https://supabase.com/dashboard" target="_blank" rel="noreferrer" className="underline font-bold inline-flex items-center gap-0.5">Supabase Dashboard <ExternalLink className="w-3 h-3" /></a>, go to <strong>SQL Editor</strong>, paste this script, and click <strong>Run</strong>.
+              </div>
+
+              <div className="relative">
+                <pre className="bg-stone-900 text-stone-100 p-4 rounded-xl font-mono text-[11px] overflow-x-auto max-h-60 custom-scrollbar leading-relaxed">
+{`CREATE TABLE IF NOT EXISTS public.certificates (
+  id TEXT PRIMARY KEY,
+  certificate_id TEXT,
+  verification_code TEXT UNIQUE NOT NULL,
+  qr_code TEXT,
+  recipient_name TEXT,
+  designation TEXT,
+  department TEXT,
+  action_achievement TEXT,
+  organized_by_date TEXT,
+  appreciation_paragraph TEXT,
+  issue_date TEXT,
+  ref_number TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  status TEXT DEFAULT 'Verified & Active'
+);
+
+ALTER TABLE public.certificates ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public verification read"
+  ON public.certificates FOR SELECT USING (true);
+
+CREATE POLICY "Allow public certificate insert and upsert"
+  ON public.certificates FOR ALL USING (true) WITH CHECK (true);`}
+                </pre>
+                <button
+                  onClick={() => {
+                    const sql = `CREATE TABLE IF NOT EXISTS public.certificates (
+  id TEXT PRIMARY KEY,
+  certificate_id TEXT,
+  verification_code TEXT UNIQUE NOT NULL,
+  qr_code TEXT,
+  recipient_name TEXT,
+  designation TEXT,
+  department TEXT,
+  action_achievement TEXT,
+  organized_by_date TEXT,
+  appreciation_paragraph TEXT,
+  issue_date TEXT,
+  ref_number TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  status TEXT DEFAULT 'Verified & Active'
+);
+
+ALTER TABLE public.certificates ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public verification read"
+  ON public.certificates FOR SELECT USING (true);
+
+CREATE POLICY "Allow public certificate insert and upsert"
+  ON public.certificates FOR ALL USING (true) WITH CHECK (true);`;
+                    navigator.clipboard.writeText(sql);
+                    setCopiedSql(true);
+                    setTimeout(() => setCopiedSql(false), 2500);
+                  }}
+                  className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-white text-xs font-semibold shadow-xs border border-stone-700 transition-all cursor-pointer"
+                >
+                  {copiedSql ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copy SQL</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="p-4 px-6 border-t border-stone-200/80 dark:border-zinc-800/80 flex items-center justify-end bg-stone-50/50 dark:bg-zinc-950/30">
+              <button
+                onClick={() => setShowSqlModal(false)}
+                className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 rounded-xl text-xs font-semibold transition-all shadow-xs cursor-pointer"
+              >
+                Close
               </button>
             </div>
           </div>

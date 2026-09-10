@@ -66,7 +66,7 @@ export async function saveCertificate(data) {
     status: 'Verified & Active'
   };
 
-  // 1. Save to local fallback cache immediately
+  // 1. Save to local fallback cache and active session mirror immediately
   const localList = getLocalCertificates();
   const existingIdx = localList.findIndex(c => c.verification_code === record.verification_code || c.certificate_id === record.certificate_id);
   if (existingIdx >= 0) {
@@ -75,6 +75,12 @@ export async function saveCertificate(data) {
     localList.unshift(record);
   }
   setLocalCertificates(localList);
+
+  try {
+    localStorage.setItem('geeta_current_active_cert', JSON.stringify(record));
+  } catch {
+    // ignore
+  }
 
   // 2. Try inserting/upserting to Supabase
   if (supabase) {
@@ -149,14 +155,16 @@ export async function fetchCertificates() {
 export async function getCertificateByCode(code) {
   if (!code) return null;
   const cleanCode = code.trim();
+  const lowerCode = cleanCode.toLowerCase();
+  const upperCode = cleanCode.toUpperCase();
 
-  // 1. Try Supabase lookup
+  // 1. Try Supabase lookup (case-insensitive with ilike)
   if (supabase) {
     try {
       const { data, error } = await supabase
         .from('certificates')
         .select('*')
-        .or(`verification_code.eq.${cleanCode},certificate_id.eq.${cleanCode},ref_number.eq.${cleanCode}`)
+        .or(`verification_code.ilike.${cleanCode},certificate_id.ilike.${cleanCode},ref_number.ilike.${cleanCode}`)
         .limit(1);
 
       if (!error && data && data.length > 0) {
@@ -165,17 +173,50 @@ export async function getCertificateByCode(code) {
     } catch (err) {
       console.warn('Supabase verification lookup notice:', err);
     }
+
+    // Secondary exact query attempt with uppercase and lowercase variants
+    try {
+      const { data, error } = await supabase
+        .from('certificates')
+        .select('*')
+        .or(`verification_code.eq.${cleanCode},verification_code.eq.${upperCode},certificate_id.eq.${cleanCode}`)
+        .limit(1);
+
+      if (!error && data && data.length > 0) {
+        return data[0];
+      }
+    } catch (err) {
+      console.warn('Supabase secondary lookup notice:', err);
+    }
   }
 
-  // 2. Check local fallback
+  // 2. Check local fallback cache
   const localList = getLocalCertificates();
   const found = localList.find(c => 
-    c.verification_code?.toLowerCase() === cleanCode.toLowerCase() ||
-    c.certificate_id?.toLowerCase() === cleanCode.toLowerCase() ||
-    c.ref_number?.toLowerCase() === cleanCode.toLowerCase()
+    c.verification_code?.trim().toLowerCase() === lowerCode ||
+    c.certificate_id?.trim().toLowerCase() === lowerCode ||
+    c.ref_number?.trim().toLowerCase() === lowerCode
   );
 
-  return found || null;
+  if (found) return found;
+
+  // 3. Check active session certificate in localStorage
+  try {
+    const activeRaw = localStorage.getItem('geeta_current_active_cert');
+    if (activeRaw) {
+      const activeCert = JSON.parse(activeRaw);
+      if (
+        activeCert.verification_code?.trim().toLowerCase() === lowerCode ||
+        activeCert.certificate_id?.trim().toLowerCase() === lowerCode
+      ) {
+        return activeCert;
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return null;
 }
 
 /**
