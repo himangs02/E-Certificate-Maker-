@@ -148,8 +148,8 @@ export const DEFAULT_TEXT_CONFIG = {
   qrCode: {
     label: "Security QR Code (Top Right)",
     x: 1035,
-    y: 135,
-    size: 115, // 115px square on 1200x1700 canvas
+    y: 130,
+    size: 130, // 130px crisp square on 1200x1700 canvas
     showCode: true,
     fontFamily: "'Montserrat', sans-serif",
     fontSize: 11,

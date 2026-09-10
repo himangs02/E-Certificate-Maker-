@@ -77,28 +77,26 @@ export function decodeCertificateData(encoded) {
 }
 
 /**
- * Build the full public verification URL for a given certificate verification code and optional payload.
+ * Build the full public verification URL for a given certificate verification code.
+ * Keeping this short ensures large, chunky, ultra-fast scannable QR modules.
  */
-export function getVerificationUrl(verificationCode, data = null) {
+export function getVerificationUrl(verificationCode) {
   const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
   const cleanCode = encodeURIComponent((verificationCode || 'GU-VERIFY').trim());
-  const payload = data ? encodeCertificateData(data) : '';
-  return payload 
-    ? `${origin}/verify/${cleanCode}?d=${payload}`
-    : `${origin}/verify/${cleanCode}`;
+  return `${origin}/verify/${cleanCode}`;
 }
 
 /**
- * Generate a QR Code as a Data URL from a text or verification URL.
+ * Generate a high-contrast, razor-sharp QR Code as a Data URL.
  */
 export async function generateQrDataUrl(text, options = {}) {
   const defaultOptions = {
-    errorCorrectionLevel: 'M',
-    margin: 1,
-    width: options.size || 256,
+    errorCorrectionLevel: 'M', // 15% error correction (fastest scan + standard tolerance)
+    margin: 2, // 2-module clear quiet zone for instant camera detection
+    width: options.size || 512, // High resolution source
     color: {
-      dark: '#1E293B', // Dark charcoal/slate
-      light: '#FFFFFF' // Clean white background
+      dark: '#000000', // Pure pitch-black for maximum optical contrast
+      light: '#FFFFFF' // Pure white background
     },
     ...options
   };

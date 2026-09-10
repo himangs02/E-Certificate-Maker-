@@ -211,14 +211,23 @@ export function renderCertificate(ctx, baseImage, formData, config, options = {}
     ctx.save();
     
     if (qrImg && qrImg.complete && qrImg.naturalWidth !== 0) {
-      // Draw subtle rounded white container backing
+      // Draw solid white container backing with clean padding
+      const pad = 6;
       ctx.fillStyle = "#FFFFFF";
-      ctx.fillRect(qrX - qrSize / 2 - 4, qrY - 4, qrSize + 8, qrSize + 8);
+      ctx.fillRect(qrX - qrSize / 2 - pad, qrY - pad, qrSize + pad * 2, qrSize + pad * 2);
 
-      // Draw QR Code
+      // Draw subtle border around plate
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.08)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(qrX - qrSize / 2 - pad, qrY - pad, qrSize + pad * 2, qrSize + pad * 2);
+
+      // Draw crisp QR Code
+      ctx.imageSmoothingQuality = "high";
       ctx.drawImage(qrImg, qrX - qrSize / 2, qrY, qrSize, qrSize);
     } else {
       // Placeholder representation if QR is loading
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(qrX - qrSize / 2 - 4, qrY - 4, qrSize + 8, qrSize + 8);
       ctx.strokeStyle = "#CBD5E1";
       ctx.lineWidth = 1.5;
       ctx.setLineDash([3, 3]);

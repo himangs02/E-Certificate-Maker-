@@ -107,7 +107,7 @@ export default function App() {
   useEffect(() => {
     if (!formData || !formData.verification_code) return;
     const timer = setTimeout(() => {
-      const verifyUrl = getVerificationUrl(formData.verification_code, formData);
+      const verifyUrl = getVerificationUrl(formData.verification_code);
       saveCertificate({
         ...formData,
         qr_code: verifyUrl

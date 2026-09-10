@@ -40,20 +40,20 @@ export default function CertificatePreview({
   const [exportState, setExportState] = useState({ active: false, label: '' });
   const [qrImage, setQrImage] = useState(null);
 
-  // Pre-load dynamic QR code image when verification code or form data changes
+  // Pre-load dynamic high-resolution QR code image when verification code changes
   useEffect(() => {
     let isMounted = true;
     const code = formData.verification_code || 'GU-2026-PREVIEW';
-    const verifyUrl = getVerificationUrl(code, formData);
+    const verifyUrl = getVerificationUrl(code);
 
-    createQrImageElement(verifyUrl, { size: 256 }).then(img => {
+    createQrImageElement(verifyUrl, { size: 512 }).then(img => {
       if (isMounted && img) {
         setQrImage(img);
       }
     });
 
     return () => { isMounted = false; };
-  }, [formData.verification_code, formData.recipientName, formData.recipientDepartment, formData.actionAchievement]);
+  }, [formData.verification_code]);
 
   // 1. Render certificate onto canvas whenever data, config, baseImage, or QR changes
   const render = useCallback(() => {
@@ -109,7 +109,7 @@ export default function CertificatePreview({
 
   // Helper to persist certificate to Supabase on export
   const persistToDatabase = async () => {
-    const verifyUrl = getVerificationUrl(formData.verification_code, formData);
+    const verifyUrl = getVerificationUrl(formData.verification_code);
     await saveCertificate({
       ...formData,
       qr_code: verifyUrl

@@ -82,7 +82,7 @@ export default function AdminDashboard({ onLogout, onBackToStudio, onOpenVerify 
 
   const handleInspectQr = async (cert) => {
     const url = getVerificationUrl(cert.verification_code);
-    const dataUrl = await generateQrDataUrl(url, { size: 400 });
+    const dataUrl = await generateQrDataUrl(url, { size: 512 });
     setSelectedQr({ cert, dataUrl, url });
   };
 
