@@ -38,3 +38,20 @@ export function exportCanvasToPDF(canvas, filename = "certificate.pdf") {
   pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
   pdf.save(filename);
 }
+
+/**
+ * Returns raw binary ArrayBuffer of A4 PDF for batch zip archives.
+ */
+export function generateCanvasPDFArrayBuffer(canvas) {
+  if (!canvas) return null;
+  const imgData = canvas.toDataURL("image/jpeg", 1.0);
+  const pdf = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
+  const pdfWidth = pdf.internal.pageSize.getWidth();
+  const pdfHeight = pdf.internal.pageSize.getHeight();
+  pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
+  return pdf.output("arraybuffer");
+}

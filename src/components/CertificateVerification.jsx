@@ -59,7 +59,7 @@ export default function CertificateVerification({ verificationCode, onBackToStud
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 flex flex-col justify-between selection:bg-orange-500/20">
+    <div className="h-screen w-full bg-[#f8f9fa] dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 flex flex-col justify-between overflow-y-auto overflow-x-hidden custom-scrollbar selection:bg-orange-500/20">
       {/* Top Header - Wide & Full-Width */}
       <header className="h-20 shrink-0 border-b border-stone-200/90 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/95 backdrop-blur-md px-4 sm:px-6 lg:px-8 shadow-xs">
         <div className="h-full w-full flex items-center justify-between">

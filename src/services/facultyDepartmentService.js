@@ -160,8 +160,8 @@ export const authenticateFaculty = (usernameOrId, password) => {
 
   // Check against dynamic faculty accounts
   const facultyList = getFacultyUsers();
-  const matched = facultyList.find(f => 
-    f.facultyId.toLowerCase() === cleanId || 
+  const matched = facultyList.find(f =>
+    f.facultyId.toLowerCase() === cleanId ||
     (f.email && f.email.toLowerCase() === cleanId)
   );
 

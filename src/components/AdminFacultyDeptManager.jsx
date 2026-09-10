@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { 
-  Building2, 
-  UserPlus, 
-  Users, 
-  Plus, 
-  Trash2, 
-  KeyRound, 
-  Mail, 
-  Check, 
-  AlertCircle, 
+import {
+  Building2,
+  UserPlus,
+  Users,
+  Plus,
+  Trash2,
+  KeyRound,
+  Mail,
+  Check,
+  AlertCircle,
   Search,
   Eye,
   EyeOff,
@@ -16,19 +16,19 @@ import {
   Shield,
   UserCheck
 } from 'lucide-react';
-import { 
-  getDepartments, 
-  addDepartment, 
-  deleteDepartment, 
-  getFacultyUsers, 
-  addFacultyUser, 
-  deleteFacultyUser 
+import {
+  getDepartments,
+  addDepartment,
+  deleteDepartment,
+  getFacultyUsers,
+  addFacultyUser,
+  deleteFacultyUser
 } from '../services/facultyDepartmentService';
 
 export default function AdminFacultyDeptManager({ onDataChanged }) {
   const [departments, setDepartments] = useState(getDepartments());
   const [facultyList, setFacultyList] = useState(getFacultyUsers());
-  
+
   // Modals & UI States
   const [showAddDeptModal, setShowAddDeptModal] = useState(false);
   const [showAddFacModal, setShowAddFacModal] = useState(false);
@@ -126,12 +126,12 @@ export default function AdminFacultyDeptManager({ onDataChanged }) {
   // Filter faculty list
   const filteredFaculty = facultyList.filter(f => {
     const q = facultySearch.toLowerCase();
-    const matchesSearch = 
+    const matchesSearch =
       f.name.toLowerCase().includes(q) ||
       f.facultyId.toLowerCase().includes(q) ||
       (f.email && f.email.toLowerCase().includes(q)) ||
       (f.department && f.department.toLowerCase().includes(q));
-    
+
     const matchesDept = selectedDeptFilter === 'ALL' || f.department === selectedDeptFilter;
     return matchesSearch && matchesDept;
   });
@@ -317,7 +317,7 @@ export default function AdminFacultyDeptManager({ onDataChanged }) {
                 filteredFaculty.map((fac) => {
                   const isPassVisible = showPassMap[fac.id];
                   return (
-                    <tr 
+                    <tr
                       key={fac.id}
                       className="hover:bg-stone-50/70 dark:hover:bg-zinc-800/40 transition-colors"
                     >

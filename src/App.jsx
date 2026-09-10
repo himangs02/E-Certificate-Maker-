@@ -13,13 +13,13 @@ import { createDefaultTemplateDataUrl } from './utils/defaultTemplateGenerator';
 import { generateVerificationCode, getVerificationUrl } from './utils/qrGenerator';
 import { saveCertificate } from './services/supabase';
 import geetaLogo from './assets/geeta_logo_transparent.png';
-import { 
-  Award, 
-  Sun, 
-  Moon, 
-  FileSpreadsheet, 
-  RotateCcw, 
-  SlidersHorizontal, 
+import {
+  Award,
+  Sun,
+  Moon,
+  FileSpreadsheet,
+  RotateCcw,
+  SlidersHorizontal,
   Check,
   ShieldCheck,
   QrCode,
@@ -31,7 +31,7 @@ export default function App() {
   // 0. Routing State: 'studio' | 'admin' | 'verify'
   const [route, setRoute] = useState('studio');
   const [verifyCode, setVerifyCode] = useState('');
-  
+
   // Admin Auth State
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
     return sessionStorage.getItem('geeta_admin_auth') === 'true';
@@ -273,9 +273,9 @@ export default function App() {
           <div className="flex items-center gap-4">
             {/* Geeta University Official Logo */}
             <div className="flex items-center">
-              <img 
-                src={geetaLogo} 
-                alt="Geeta University Logo" 
+              <img
+                src={geetaLogo}
+                alt="Geeta University Logo"
                 className="h-12 sm:h-14 w-auto object-contain py-1"
               />
             </div>
@@ -299,7 +299,7 @@ export default function App() {
 
           <div className="flex items-center gap-2 sm:gap-2.5">
             {/* Live Verification Code Badge */}
-            <div 
+            <div
               onClick={handleRegenerateCode}
               className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-orange-500/10 text-orange-700 dark:text-orange-300 border border-orange-500/20 text-xs font-mono cursor-pointer hover:bg-orange-500/15 transition-all"
               title="Click to generate a new random security code & QR"
@@ -321,25 +321,24 @@ export default function App() {
             {/* Layout Inspector Toggle */}
             <button
               onClick={() => setShowTuner(!showTuner)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                showTuner
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${showTuner
                   ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs'
                   : 'bg-stone-100/90 hover:bg-stone-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-700'
-              }`}
+                }`}
               title="Toggle Layout & Typography Inspector"
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{showTuner ? 'Close Inspector' : 'Adjust Layout'}</span>
             </button>
 
-            {/* Batch CSV Modal */}
+            {/* Batch Excel Upload Modal */}
             <button
               onClick={() => setIsBatchModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-stone-100/90 hover:bg-stone-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 transition-all border border-stone-200 dark:border-zinc-700 cursor-pointer"
-              title="Bulk generate multiple certificates from CSV"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-900/60 transition-all shadow-xs cursor-pointer"
+              title="Bulk generate multiple certificates from Excel (.xlsx) / CSV"
             >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-zinc-500" />
-              <span>Batch CSV</span>
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>Upload Excel</span>
             </button>
 
             {/* Dark / Light Toggle */}
@@ -393,6 +392,7 @@ export default function App() {
               setShowTuner={setShowTuner}
               config={config}
               onChangeConfig={setConfig}
+              onOpenBatchModal={() => setIsBatchModalOpen(true)}
             />
           </div>
 
@@ -437,6 +437,7 @@ export default function App() {
         onClose={() => setIsBatchModalOpen(false)}
         baseImage={baseImage}
         config={config}
+        formData={formData}
         defaultParagraph={formData.appreciationParagraph}
       />
     </div>

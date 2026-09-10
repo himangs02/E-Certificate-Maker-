@@ -14,7 +14,8 @@ import {
   Sun,
   Moon,
   Eye,
-  EyeOff
+  EyeOff,
+  ChevronDown
 } from 'lucide-react';
 
 export default function FacultyLogin({ 
@@ -53,7 +54,7 @@ export default function FacultyLogin({
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 flex flex-col justify-between transition-colors duration-200">
+    <div className="h-screen w-full bg-[#f8f9fa] dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 flex flex-col justify-between overflow-y-auto overflow-x-hidden custom-scrollbar transition-colors duration-200">
       {/* Top Navbar - Full Width & Wide */}
       <header className="h-20 shrink-0 border-b border-stone-200/90 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/95 backdrop-blur-md px-4 sm:px-6 lg:px-8 shadow-xs">
         <div className="h-full w-full flex items-center justify-between">
@@ -156,7 +157,7 @@ export default function FacultyLogin({
                 <select
                   value={department}
                   onChange={(e) => setDepartment(e.target.value)}
-                  className="w-full bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl pl-9 pr-3.5 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 transition-all text-xs sm:text-sm appearance-none cursor-pointer"
+                  className="w-full bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl pl-9 pr-10 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 transition-all text-xs sm:text-sm appearance-none cursor-pointer"
                 >
                   {departments.map((dept) => (
                     <option key={dept.id || dept.name} value={dept.name}>
@@ -164,6 +165,7 @@ export default function FacultyLogin({
                     </option>
                   ))}
                 </select>
+                <ChevronDown className="w-4 h-4 text-zinc-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-transform" />
               </div>
             </div>
 
