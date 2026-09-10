@@ -66,7 +66,7 @@ export async function saveCertificate(data) {
     status: 'Verified & Active'
   };
 
-  // 1. Save to local fallback cache and active session mirror immediately
+  // 1. Save to local fallback cache immediately upon official issue
   const localList = getLocalCertificates();
   const existingIdx = localList.findIndex(c => c.verification_code === record.verification_code || c.certificate_id === record.certificate_id);
   if (existingIdx >= 0) {
@@ -75,12 +75,6 @@ export async function saveCertificate(data) {
     localList.unshift(record);
   }
   setLocalCertificates(localList);
-
-  try {
-    localStorage.setItem('geeta_current_active_cert', JSON.stringify(record));
-  } catch {
-    // ignore
-  }
 
   // 2. Try inserting/upserting to Supabase
   if (supabase) {
@@ -199,22 +193,6 @@ export async function getCertificateByCode(code) {
   );
 
   if (found) return found;
-
-  // 3. Check active session certificate in localStorage
-  try {
-    const activeRaw = localStorage.getItem('geeta_current_active_cert');
-    if (activeRaw) {
-      const activeCert = JSON.parse(activeRaw);
-      if (
-        activeCert.verification_code?.trim().toLowerCase() === lowerCode ||
-        activeCert.certificate_id?.trim().toLowerCase() === lowerCode
-      ) {
-        return activeCert;
-      }
-    }
-  } catch {
-    // ignore
-  }
 
   return null;
 }

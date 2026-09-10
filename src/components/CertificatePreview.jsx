@@ -130,7 +130,7 @@ export default function CertificatePreview({
 
     const safeName = (formData.recipientName || 'Certificate').replace(/[^a-zA-Z0-9_-]/g, '_');
     downloadCanvasImage(cleanCanvas, `${safeName}_Certificate.png`, 'image/png');
-    notifyExport('PNG Downloaded & Saved to Supabase');
+    notifyExport('PNG Downloaded & Certificate Officially Issued');
     triggerCelebration();
   };
 
@@ -147,7 +147,7 @@ export default function CertificatePreview({
 
     const safeName = (formData.recipientName || 'Certificate').replace(/[^a-zA-Z0-9_-]/g, '_');
     downloadCanvasImage(cleanCanvas, `${safeName}_Certificate.jpg`, 'image/jpeg', 0.98);
-    notifyExport('JPG Downloaded & Saved to Supabase');
+    notifyExport('JPG Downloaded & Certificate Officially Issued');
     triggerCelebration();
   };
 
@@ -164,7 +164,7 @@ export default function CertificatePreview({
 
     const safeName = (formData.recipientName || 'Certificate').replace(/[^a-zA-Z0-9_-]/g, '_');
     exportCanvasToPDF(cleanCanvas, `${safeName}_Certificate.pdf`);
-    notifyExport('PDF Downloaded & Saved to Supabase');
+    notifyExport('PDF Downloaded & Certificate Officially Issued');
     triggerCelebration();
   };
 

@@ -103,20 +103,6 @@ export default function App() {
     return () => window.removeEventListener('popstate', parseUrlRoute);
   }, []);
 
-  // Auto-sync active certificate to Supabase & LocalStorage cache in real-time
-  useEffect(() => {
-    if (!formData || !formData.verification_code) return;
-    const timer = setTimeout(() => {
-      const verifyUrl = getVerificationUrl(formData.verification_code);
-      saveCertificate({
-        ...formData,
-        qr_code: verifyUrl
-      }).catch(err => console.warn('Auto-save notice:', err));
-    }, 400);
-
-    return () => clearTimeout(timer);
-  }, [formData]);
-
   // Sync URL when route state changes
   const navigateTo = (newRoute, param = '') => {
     setRoute(newRoute);

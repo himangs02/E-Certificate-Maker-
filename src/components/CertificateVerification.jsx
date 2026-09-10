@@ -26,47 +26,26 @@ export default function CertificateVerification({ verificationCode, onBackToStud
   const [searched, setSearched] = useState(false);
 
   useEffect(() => {
-    // 1. Check if there's encoded data in URL query params (?d=...)
-    let embeddedCert = null;
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const encodedPayload = params.get('d');
-      if (encodedPayload) {
-        embeddedCert = decodeCertificateData(encodedPayload);
-      }
-    } catch (err) {
-      console.warn('URL payload parse error:', err);
-    }
-
-    const codeToSearch = verificationCode || embeddedCert?.verification_code || '';
-    if (codeToSearch || embeddedCert) {
-      loadCertificate(codeToSearch, embeddedCert);
+    if (verificationCode) {
+      loadCertificate(verificationCode);
     } else {
       setLoading(false);
     }
   }, [verificationCode]);
 
-  const loadCertificate = async (codeToFind, fallbackPayload = null) => {
+  const loadCertificate = async (codeToFind) => {
     setLoading(true);
     setSearched(true);
     try {
       const cleanCode = (codeToFind || '').trim();
-      let data = cleanCode ? await getCertificateByCode(cleanCode) : null;
-
-      // If database didn't have it, but we have fallbackPayload from URL:
-      if (!data && fallbackPayload) {
-        data = fallbackPayload;
-        // Auto-save this certificate to database/localStorage so future queries find it immediately
-        saveCertificate(fallbackPayload).catch(err => console.warn('Sync notice:', err));
-      }
-
+      const data = cleanCode ? await getCertificateByCode(cleanCode) : null;
       setCert(data);
       if (data?.verification_code) {
         setSearchCode(data.verification_code);
       }
     } catch (err) {
       console.error('Error loading certificate:', err);
-      setCert(fallbackPayload || null);
+      setCert(null);
     } finally {
       setLoading(false);
     }
@@ -228,11 +207,11 @@ export default function CertificateVerification({ verificationCode, onBackToStud
 
             <div>
               <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-                {searched ? 'Certificate Not Found' : 'Verify a Geeta University Certificate'}
+                {searched ? 'Certificate Not Issued or Not Found' : 'Verify a Geeta University Certificate'}
               </h3>
               <p className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto">
                 {searched
-                  ? 'No record matches the provided verification code. Please verify the code on your certificate or scan the QR code again.'
+                  ? 'No issued record matches this verification code. A certificate becomes officially verified only after it has been downloaded by authorized faculty.'
                   : 'Enter the unique verification code printed below the QR code to verify authenticity.'}
               </p>
             </div>
