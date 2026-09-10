@@ -48,7 +48,19 @@ export const getDepartments = () => {
       localStorage.setItem(STORAGE_KEYS.DEPARTMENTS, JSON.stringify(INITIAL_DEPARTMENTS));
       return INITIAL_DEPARTMENTS;
     }
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      localStorage.setItem(STORAGE_KEYS.DEPARTMENTS, JSON.stringify(INITIAL_DEPARTMENTS));
+      return INITIAL_DEPARTMENTS;
+    }
+    const existingNames = new Set(parsed.map(d => d.name));
+    const merged = [...parsed];
+    INITIAL_DEPARTMENTS.forEach(init => {
+      if (!existingNames.has(init.name)) {
+        merged.push(init);
+      }
+    });
+    return merged;
   } catch {
     return INITIAL_DEPARTMENTS;
   }

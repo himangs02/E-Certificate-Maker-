@@ -328,17 +328,14 @@ export default function AdminDashboard({ onLogout, onBackToStudio, onOpenVerify 
                   <select
                     value={selectedDepartment}
                     onChange={(e) => setSelectedDepartment(e.target.value)}
-                    className="bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl pl-8 pr-3 py-2 text-xs font-medium text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-zinc-400 cursor-pointer max-w-[210px] shadow-2xs"
+                    className="bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl pl-8 pr-3 py-2 text-xs font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-zinc-400 cursor-pointer max-w-[240px] shadow-2xs"
                   >
-                    <option value="ALL">All Departments ({certificates.length})</option>
-                    {allDepartmentOptions.map((deptName) => {
-                      const count = certificates.filter(c => c.department === deptName).length;
-                      return (
-                        <option key={deptName} value={deptName}>
-                          {deptName} ({count})
-                        </option>
-                      );
-                    })}
+                    <option value="ALL">All Departments</option>
+                    {allDepartmentOptions.map((deptName) => (
+                      <option key={deptName} value={deptName}>
+                        {deptName}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
