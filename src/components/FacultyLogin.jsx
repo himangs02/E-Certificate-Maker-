@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import geetaLogo from '../assets/geeta_logo_transparent.png';
-import { getDepartments, authenticateFaculty } from '../services/facultyDepartmentService';
+import { getDepartments, fetchDepartments, authenticateFaculty } from '../services/facultyDepartmentService';
 import { 
   GraduationCap, 
   User, 
@@ -15,7 +15,7 @@ import {
   Moon,
   Eye,
   EyeOff,
-  ChevronDown
+  Loader2
 } from 'lucide-react';
 
 export default function FacultyLogin({ 
@@ -25,21 +25,30 @@ export default function FacultyLogin({
   isDark,
   onToggleTheme 
 }) {
-  const departments = getDepartments();
+  const [departments, setDepartments] = useState(() => getDepartments());
   const [facultyId, setFacultyId] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [department, setDepartment] = useState(departments[0]?.name || '');
+  const [department, setDepartment] = useState(() => getDepartments()[0]?.name || 'Department of Arts & Humanities');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  useEffect(() => {
+    fetchDepartments().then(depts => {
+      if (depts && depts.length > 0) {
+        setDepartments(depts);
+        setDepartment(prev => prev || depts[0].name);
+      }
+    }).catch(err => console.warn('Departments fetch notice:', err));
+  }, []);
+
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    setTimeout(() => {
-      const authResult = authenticateFaculty(facultyId, password);
+    try {
+      const authResult = await authenticateFaculty(facultyId, password);
 
       if (authResult.success) {
         onLoginSuccess({
@@ -49,12 +58,15 @@ export default function FacultyLogin({
       } else {
         setError(authResult.message || 'Invalid credentials. Please verify your Faculty ID and password.');
       }
+    } catch (err) {
+      setError('Login error: ' + (err.message || 'Unable to connect to database.'));
+    } finally {
       setLoading(false);
-    }, 300);
+    }
   };
 
   return (
-    <div className="h-screen w-full bg-[#f8f9fa] dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 flex flex-col justify-between overflow-y-auto overflow-x-hidden custom-scrollbar transition-colors duration-200">
+    <div className="min-h-screen bg-[#f8f9fa] dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 flex flex-col justify-between transition-colors duration-200">
       {/* Top Navbar - Full Width & Wide */}
       <header className="h-20 shrink-0 border-b border-stone-200/90 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/95 backdrop-blur-md px-4 sm:px-6 lg:px-8 shadow-xs">
         <div className="h-full w-full flex items-center justify-between">
@@ -142,7 +154,7 @@ export default function FacultyLogin({
                   required
                   value={facultyId}
                   onChange={(e) => setFacultyId(e.target.value)}
-                  placeholder="Enter Faculty ID or Username"
+                  placeholder="Enter Faculty ID or Username (e.g. faculty or GU/FAC/001)"
                   className="w-full bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl pl-9 pr-3.5 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 transition-all text-sm"
                 />
               </div>
@@ -157,7 +169,7 @@ export default function FacultyLogin({
                 <select
                   value={department}
                   onChange={(e) => setDepartment(e.target.value)}
-                  className="w-full bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl pl-9 pr-10 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 transition-all text-xs sm:text-sm appearance-none cursor-pointer"
+                  className="w-full bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl pl-9 pr-3.5 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 transition-all text-xs sm:text-sm appearance-none cursor-pointer"
                 >
                   {departments.map((dept) => (
                     <option key={dept.id || dept.name} value={dept.name}>
@@ -165,7 +177,6 @@ export default function FacultyLogin({
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="w-4 h-4 text-zinc-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-transform" />
               </div>
             </div>
 
@@ -202,7 +213,10 @@ export default function FacultyLogin({
               className="w-full flex items-center justify-center gap-2 py-3 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 rounded-xl text-sm font-semibold shadow-xs transition-all disabled:opacity-50 mt-4 cursor-pointer"
             >
               {loading ? (
-                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Verifying Credentials...</span>
+                </div>
               ) : (
                 <>
                   <span>Sign In & Open Studio</span>

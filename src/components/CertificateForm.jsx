@@ -1,14 +1,15 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { PRESETS } from '../constants/presets';
-import {
-  User,
-  GraduationCap,
-  Building2,
-  Trophy,
-  Calendar,
-  FileText,
-  Hash,
-  Upload,
+import { getDepartments, fetchDepartments } from '../services/facultyDepartmentService';
+import { 
+  User, 
+  GraduationCap, 
+  Building2, 
+  Trophy, 
+  Calendar, 
+  FileText, 
+  Hash, 
+  Upload, 
   BookOpen,
   Image as ImageIcon,
   Check,
@@ -16,9 +17,7 @@ import {
   Award,
   Users,
   ChevronDown,
-  ChevronUp,
-  FileSpreadsheet,
-  Sparkles
+  ChevronUp
 } from 'lucide-react';
 
 const APPRECIATION_TEMPLATES = [
@@ -51,11 +50,17 @@ export default function CertificateForm({
   showTuner,
   setShowTuner,
   config,
-  onChangeConfig,
-  onOpenBatchModal
+  onChangeConfig
 }) {
   const fileInputRef = useRef(null);
   const [showAdvancedTemplate, setShowAdvancedTemplate] = useState(false);
+  const [departmentList, setDepartmentList] = useState(() => getDepartments());
+
+  useEffect(() => {
+    fetchDepartments().then(depts => {
+      if (depts && depts.length > 0) setDepartmentList(depts);
+    }).catch(err => console.warn(err));
+  }, []);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -93,16 +98,17 @@ export default function CertificateForm({
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
           {PRESETS.map((preset) => {
-            const isSelected = formData.recipientName === preset.data.recipientName &&
-              formData.actionAchievement === preset.data.actionAchievement;
+            const isSelected = formData.recipientName === preset.data.recipientName && 
+                               formData.actionAchievement === preset.data.actionAchievement;
             return (
               <button
                 key={preset.id}
                 onClick={() => onApplyPreset(preset)}
-                className={`p-2 rounded-lg text-left transition-all border flex flex-col justify-between ${isSelected
+                className={`p-2 rounded-lg text-left transition-all border flex flex-col justify-between ${
+                  isSelected
                     ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-zinc-900 dark:border-zinc-100 shadow-xs'
                     : 'bg-stone-50/70 hover:bg-stone-100 dark:bg-zinc-950/60 dark:hover:bg-zinc-800/70 border-stone-200/70 dark:border-zinc-800/80 text-zinc-700 dark:text-zinc-300'
-                  }`}
+                }`}
               >
                 <div className="flex items-center justify-between gap-1 mb-0.5">
                   <span className="text-[11px] font-semibold truncate">{preset.name}</span>
@@ -115,43 +121,9 @@ export default function CertificateForm({
         </div>
       </div>
 
-      {/* Bulk Excel Upload Card for Teachers */}
-      {onOpenBatchModal && (
-        <div 
-          onClick={onOpenBatchModal}
-          className="bg-emerald-50/80 hover:bg-emerald-100/80 dark:bg-emerald-950/30 dark:hover:bg-emerald-950/50 border border-emerald-200/90 dark:border-emerald-900/60 rounded-xl p-3 shadow-xs transition-all cursor-pointer flex items-center justify-between gap-3 group"
-        >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
-              <FileSpreadsheet className="w-4 h-4" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-bold text-emerald-950 dark:text-emerald-200">
-                  Bulk Generate for Entire Class
-                </span>
-                <span className="px-1.5 py-0.2 text-[9px] font-bold bg-emerald-600 text-white rounded">
-                  Excel (.xlsx)
-                </span>
-              </div>
-              <p className="text-[11px] text-emerald-700 dark:text-emerald-400 truncate">
-                Upload student spreadsheet & download ZIP of 100+ certificates
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold shrink-0 shadow-xs transition-colors"
-          >
-            Upload Sheet
-          </button>
-        </div>
-      )}
-
       {/* 2. Certificate Details Form - Compact & Single-Page Optimized */}
       <div className="bg-white dark:bg-zinc-900 border border-stone-200/80 dark:border-zinc-800/80 rounded-xl p-3.5 sm:p-4 shadow-xs space-y-3.5 transition-colors">
-
+        
         {/* Group 1: Recipient Information */}
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -203,10 +175,11 @@ export default function CertificateForm({
                 onFocus={() => setActiveField('recipientName')}
                 onChange={(e) => handleInputChange('recipientName', e.target.value)}
                 placeholder="e.g. Mr. Rahul Sharma or Dr. Priya Sharma"
-                className={`w-full bg-stone-50/60 dark:bg-zinc-950/70 border rounded-lg px-3 py-1.5 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-all focus:outline-none ${activeField === 'recipientName'
+                className={`w-full bg-stone-50/60 dark:bg-zinc-950/70 border rounded-lg px-3 py-1.5 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-all focus:outline-none ${
+                  activeField === 'recipientName'
                     ? 'border-zinc-900 dark:border-zinc-100 ring-2 ring-zinc-900/10 dark:ring-zinc-100/10 bg-white dark:bg-zinc-950'
                     : 'border-stone-200 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700'
-                  }`}
+                }`}
               />
             </div>
 
@@ -223,10 +196,11 @@ export default function CertificateForm({
                   onFocus={() => setActiveField('designation')}
                   onChange={(e) => handleInputChange('designation', e.target.value)}
                   placeholder="e.g. B.A. 2nd Semester"
-                  className={`w-full bg-stone-50/60 dark:bg-zinc-950/70 border rounded-lg px-3 py-1.5 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-all focus:outline-none ${activeField === 'designation'
+                  className={`w-full bg-stone-50/60 dark:bg-zinc-950/70 border rounded-lg px-3 py-1.5 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-all focus:outline-none ${
+                    activeField === 'designation'
                       ? 'border-zinc-900 dark:border-zinc-100 ring-2 ring-zinc-900/10 dark:ring-zinc-100/10 bg-white dark:bg-zinc-950'
                       : 'border-stone-200 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700'
-                    }`}
+                  }`}
                 />
               </div>
 
@@ -237,15 +211,22 @@ export default function CertificateForm({
                 </label>
                 <input
                   type="text"
+                  list="department-datalist"
                   value={formData.department}
                   onFocus={() => setActiveField('department')}
                   onChange={(e) => handleInputChange('department', e.target.value)}
-                  placeholder="e.g. School of Computer Science & Engineering"
-                  className={`w-full bg-stone-50/60 dark:bg-zinc-950/70 border rounded-lg px-3 py-1.5 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-all focus:outline-none ${activeField === 'department'
+                  placeholder="e.g. Department of Arts & Humanities"
+                  className={`w-full bg-stone-50/60 dark:bg-zinc-950/70 border rounded-lg px-3 py-1.5 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-all focus:outline-none ${
+                    activeField === 'department'
                       ? 'border-zinc-900 dark:border-zinc-100 ring-2 ring-zinc-900/10 dark:ring-zinc-100/10 bg-white dark:bg-zinc-950'
                       : 'border-stone-200 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700'
-                    }`}
+                  }`}
                 />
+                <datalist id="department-datalist">
+                  {departmentList.map(d => (
+                    <option key={d.id || d.name} value={d.name} />
+                  ))}
+                </datalist>
               </div>
             </div>
           </div>
@@ -276,10 +257,11 @@ export default function CertificateForm({
                 onFocus={() => setActiveField('actionAchievement')}
                 onChange={(e) => handleInputChange('actionAchievement', e.target.value)}
                 placeholder="e.g. for securing 1st Position in Tech Innovation Competition"
-                className={`w-full bg-stone-50/60 dark:bg-zinc-950/70 border rounded-lg px-3 py-1.5 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-all focus:outline-none ${activeField === 'actionAchievement'
+                className={`w-full bg-stone-50/60 dark:bg-zinc-950/70 border rounded-lg px-3 py-1.5 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-all focus:outline-none ${
+                  activeField === 'actionAchievement'
                     ? 'border-zinc-900 dark:border-zinc-100 ring-2 ring-zinc-900/10 dark:ring-zinc-100/10 bg-white dark:bg-zinc-950'
                     : 'border-stone-200 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700'
-                  }`}
+                }`}
               />
             </div>
 
@@ -294,10 +276,11 @@ export default function CertificateForm({
                 onFocus={() => setActiveField('organizedByDate')}
                 onChange={(e) => handleInputChange('organizedByDate', e.target.value)}
                 placeholder="e.g. organized by Department of Creative Arts & Media on September 15, 2026."
-                className={`w-full bg-stone-50/60 dark:bg-zinc-950/70 border rounded-lg px-3 py-1.5 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-all focus:outline-none ${activeField === 'organizedByDate'
+                className={`w-full bg-stone-50/60 dark:bg-zinc-950/70 border rounded-lg px-3 py-1.5 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-all focus:outline-none ${
+                  activeField === 'organizedByDate'
                     ? 'border-zinc-900 dark:border-zinc-100 ring-2 ring-zinc-900/10 dark:ring-zinc-100/10 bg-white dark:bg-zinc-950'
                     : 'border-stone-200 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700'
-                  }`}
+                }`}
               />
             </div>
 
@@ -321,10 +304,11 @@ export default function CertificateForm({
                       key={idx}
                       type="button"
                       onClick={() => handleInputChange('appreciationParagraph', tmpl.text)}
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium transition-all border ${isCurrent
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium transition-all border ${
+                        isCurrent
                           ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-zinc-900 dark:border-zinc-100 shadow-xs'
                           : 'bg-stone-50 hover:bg-stone-100 dark:bg-zinc-950/60 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border-stone-200 dark:border-zinc-800'
-                        }`}
+                      }`}
                     >
                       <IconComponent className="w-3 h-3 opacity-80" />
                       <span>{tmpl.label}</span>
@@ -339,10 +323,11 @@ export default function CertificateForm({
                 onFocus={() => setActiveField('appreciationParagraph')}
                 onChange={(e) => handleInputChange('appreciationParagraph', e.target.value)}
                 placeholder="Enter 2-3 lines of appreciation text..."
-                className={`w-full bg-stone-50/60 dark:bg-zinc-950/70 border rounded-lg px-3 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 leading-relaxed transition-all focus:outline-none ${activeField === 'appreciationParagraph'
+                className={`w-full bg-stone-50/60 dark:bg-zinc-950/70 border rounded-lg px-3 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 leading-relaxed transition-all focus:outline-none ${
+                  activeField === 'appreciationParagraph'
                     ? 'border-zinc-900 dark:border-zinc-100 ring-2 ring-zinc-900/10 dark:ring-zinc-100/10 bg-white dark:bg-zinc-950'
                     : 'border-stone-200 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700'
-                  }`}
+                }`}
               />
             </div>
           </div>
@@ -373,10 +358,11 @@ export default function CertificateForm({
                 onFocus={() => setActiveField('issueDate')}
                 onChange={(e) => handleInputChange('issueDate', e.target.value)}
                 placeholder="e.g. September 15, 2026"
-                className={`w-full bg-stone-50/60 dark:bg-zinc-950/70 border rounded-lg px-3 py-1.5 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-all focus:outline-none ${activeField === 'issueDate'
+                className={`w-full bg-stone-50/60 dark:bg-zinc-950/70 border rounded-lg px-3 py-1.5 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-all focus:outline-none ${
+                  activeField === 'issueDate'
                     ? 'border-zinc-900 dark:border-zinc-100 ring-2 ring-zinc-900/10 dark:ring-zinc-100/10 bg-white dark:bg-zinc-950'
                     : 'border-stone-200 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700'
-                  }`}
+                }`}
               />
             </div>
 
@@ -391,10 +377,11 @@ export default function CertificateForm({
                 onFocus={() => setActiveField('refNumber')}
                 onChange={(e) => handleInputChange('refNumber', e.target.value)}
                 placeholder="e.g. GU/Pas/2026/042"
-                className={`w-full bg-stone-50/60 dark:bg-zinc-950/70 border rounded-lg px-3 py-1.5 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-all focus:outline-none ${activeField === 'refNumber'
+                className={`w-full bg-stone-50/60 dark:bg-zinc-950/70 border rounded-lg px-3 py-1.5 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-all focus:outline-none ${
+                  activeField === 'refNumber'
                     ? 'border-zinc-900 dark:border-zinc-100 ring-2 ring-zinc-900/10 dark:ring-zinc-100/10 bg-white dark:bg-zinc-950'
                     : 'border-stone-200 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700'
-                  }`}
+                }`}
               />
             </div>
           </div>

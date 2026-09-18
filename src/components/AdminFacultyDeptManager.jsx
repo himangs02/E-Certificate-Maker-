@@ -1,34 +1,41 @@
-import React, { useState } from 'react';
-import {
-  Building2,
-  UserPlus,
-  Users,
-  Plus,
-  Trash2,
-  KeyRound,
-  Mail,
-  Check,
-  AlertCircle,
+import React, { useState, useEffect } from 'react';
+import { 
+  Building2, 
+  UserPlus, 
+  Users, 
+  Plus, 
+  Trash2, 
+  KeyRound, 
+  Mail, 
+  Check, 
+  AlertCircle, 
   Search,
   Eye,
   EyeOff,
   Briefcase,
   Shield,
-  UserCheck
+  UserCheck,
+  RefreshCw,
+  Loader2
 } from 'lucide-react';
-import {
-  getDepartments,
-  addDepartment,
-  deleteDepartment,
-  getFacultyUsers,
-  addFacultyUser,
-  deleteFacultyUser
+import { 
+  getDepartments, 
+  fetchDepartments,
+  addDepartment, 
+  deleteDepartment, 
+  getFacultyUsers, 
+  fetchFacultyUsers,
+  addFacultyUser, 
+  deleteFacultyUser 
 } from '../services/facultyDepartmentService';
 
 export default function AdminFacultyDeptManager({ onDataChanged }) {
-  const [departments, setDepartments] = useState(getDepartments());
-  const [facultyList, setFacultyList] = useState(getFacultyUsers());
-
+  const [departments, setDepartments] = useState(() => getDepartments());
+  const [facultyList, setFacultyList] = useState(() => getFacultyUsers());
+  const [loading, setLoading] = useState(false);
+  const [submittingDept, setSubmittingDept] = useState(false);
+  const [submittingFac, setSubmittingFac] = useState(false);
+  
   // Modals & UI States
   const [showAddDeptModal, setShowAddDeptModal] = useState(false);
   const [showAddFacModal, setShowAddFacModal] = useState(false);
@@ -49,39 +56,79 @@ export default function AdminFacultyDeptManager({ onDataChanged }) {
     name: '',
     facultyId: '',
     password: 'geeta@123',
-    department: departments[0]?.name || 'Department of Computer Science & Engineering',
+    department: '',
     designation: 'Assistant Professor',
     email: '',
   });
   const [facError, setFacError] = useState('');
   const [facShowPass, setFacShowPass] = useState(false);
 
+  // Sync latest data from Supabase on mount
+  const reloadData = async () => {
+    setLoading(true);
+    try {
+      const [fetchedDepts, fetchedFac] = await Promise.all([
+        fetchDepartments(),
+        fetchFacultyUsers()
+      ]);
+      if (fetchedDepts) setDepartments(fetchedDepts);
+      if (fetchedFac) setFacultyList(fetchedFac);
+      if (onDataChanged) onDataChanged();
+    } catch (err) {
+      console.warn('Error loading departments/faculty from database:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    reloadData();
+  }, []);
+
+  // Update default department in form when departments load
+  useEffect(() => {
+    if (departments.length > 0 && !facForm.department) {
+      setFacForm(prev => ({
+        ...prev,
+        department: departments[0].name
+      }));
+    }
+  }, [departments]);
+
   // --- Department Actions ---
-  const handleAddDeptSubmit = (e) => {
+  const handleAddDeptSubmit = async (e) => {
     e.preventDefault();
     if (!deptForm.name.trim()) {
       setDeptError('Department name is required');
       return;
     }
-    const created = addDepartment(deptForm);
-    const updated = getDepartments();
-    setDepartments(updated);
-    setDeptForm({ name: '', code: '', head: '' });
+    setSubmittingDept(true);
     setDeptError('');
-    setShowAddDeptModal(false);
-    if (onDataChanged) onDataChanged();
+    try {
+      await addDepartment(deptForm);
+      const updated = await fetchDepartments();
+      setDepartments(updated);
+      setDeptForm({ name: '', code: '', head: '' });
+      setShowAddDeptModal(false);
+      if (onDataChanged) onDataChanged();
+    } catch (err) {
+      setDeptError('Failed to save department: ' + err.message);
+    } finally {
+      setSubmittingDept(false);
+    }
   };
 
-  const handleDeleteDept = (id, name) => {
+  const handleDeleteDept = async (id, name) => {
     if (window.confirm(`Are you sure you want to remove "${name}"?`)) {
-      const updated = deleteDepartment(id);
+      await deleteDepartment(id);
+      const updated = await fetchDepartments();
       setDepartments(updated);
       if (onDataChanged) onDataChanged();
     }
   };
 
   // --- Faculty Actions ---
-  const handleAddFacSubmit = (e) => {
+  const handleAddFacSubmit = async (e) => {
     e.preventDefault();
     if (!facForm.name.trim() || !facForm.facultyId.trim()) {
       setFacError('Faculty name and Faculty ID / Username are required');
@@ -92,25 +139,36 @@ export default function AdminFacultyDeptManager({ onDataChanged }) {
       return;
     }
 
-    addFacultyUser(facForm);
-    const updated = getFacultyUsers();
-    setFacultyList(updated);
-    setFacForm({
-      name: '',
-      facultyId: '',
-      password: 'geeta@123',
-      department: departments[0]?.name || '',
-      designation: 'Assistant Professor',
-      email: '',
-    });
+    setSubmittingFac(true);
     setFacError('');
-    setShowAddFacModal(false);
-    if (onDataChanged) onDataChanged();
+    try {
+      await addFacultyUser({
+        ...facForm,
+        department: facForm.department || departments[0]?.name || 'Department of Arts & Humanities'
+      });
+      const updated = await fetchFacultyUsers();
+      setFacultyList(updated);
+      setFacForm({
+        name: '',
+        facultyId: '',
+        password: 'geeta@123',
+        department: departments[0]?.name || '',
+        designation: 'Assistant Professor',
+        email: '',
+      });
+      setShowAddFacModal(false);
+      if (onDataChanged) onDataChanged();
+    } catch (err) {
+      setFacError('Failed to save faculty credentials: ' + err.message);
+    } finally {
+      setSubmittingFac(false);
+    }
   };
 
-  const handleDeleteFac = (id, name, facultyId) => {
+  const handleDeleteFac = async (id, name, facultyId) => {
     if (window.confirm(`Are you sure you want to remove faculty member "${name}" (${facultyId})?`)) {
-      const updated = deleteFacultyUser(id);
+      await deleteFacultyUser(id);
+      const updated = await fetchFacultyUsers();
       setFacultyList(updated);
       if (onDataChanged) onDataChanged();
     }
@@ -126,12 +184,12 @@ export default function AdminFacultyDeptManager({ onDataChanged }) {
   // Filter faculty list
   const filteredFaculty = facultyList.filter(f => {
     const q = facultySearch.toLowerCase();
-    const matchesSearch =
+    const matchesSearch = 
       f.name.toLowerCase().includes(q) ||
       f.facultyId.toLowerCase().includes(q) ||
       (f.email && f.email.toLowerCase().includes(q)) ||
       (f.department && f.department.toLowerCase().includes(q));
-
+    
     const matchesDept = selectedDeptFilter === 'ALL' || f.department === selectedDeptFilter;
     return matchesSearch && matchesDept;
   });
@@ -153,18 +211,28 @@ export default function AdminFacultyDeptManager({ onDataChanged }) {
                     University Departments
                   </h3>
                   <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                    {departments.length} Active Academic Departments & Schools
+                    {departments.length} Active Academic Departments (Cloud Database)
                   </p>
                 </div>
               </div>
 
-              <button
-                onClick={() => setShowAddDeptModal(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-semibold shadow-xs transition-all cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add Department</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={reloadData}
+                  disabled={loading}
+                  className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                  title="Reload from Supabase"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-orange-500' : ''}`} />
+                </button>
+                <button
+                  onClick={() => setShowAddDeptModal(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-semibold shadow-xs transition-all cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Department</span>
+                </button>
+              </div>
             </div>
 
             {/* Departments List */}
@@ -173,7 +241,7 @@ export default function AdminFacultyDeptManager({ onDataChanged }) {
                 const count = facultyList.filter(f => f.department === dept.name).length;
                 return (
                   <div
-                    key={dept.id}
+                    key={dept.id || dept.name}
                     className="flex items-center justify-between p-2.5 rounded-xl bg-stone-50 dark:bg-zinc-950/60 border border-stone-200/60 dark:border-zinc-800/60 text-xs hover:border-stone-300 dark:hover:border-zinc-700 transition-colors"
                   >
                     <div className="min-w-0 flex-1 pr-2">
@@ -219,7 +287,7 @@ export default function AdminFacultyDeptManager({ onDataChanged }) {
                     Faculty Credentials Management
                   </h3>
                   <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                    {facultyList.length} Authorized Faculty Accounts configured
+                    {facultyList.length} Authorized Faculty Accounts in Database
                   </p>
                 </div>
               </div>
@@ -236,17 +304,17 @@ export default function AdminFacultyDeptManager({ onDataChanged }) {
             <div className="mt-3.5 bg-orange-50/60 dark:bg-orange-950/20 border border-orange-200/60 dark:border-orange-900/40 rounded-xl p-3.5 text-xs text-orange-900 dark:text-orange-200 space-y-1.5">
               <div className="flex items-center gap-1.5 font-bold">
                 <Shield className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-                <span>Faculty Role & Access Control</span>
+                <span>Cloud Persistent Access Control</span>
               </div>
               <p className="text-[11px] text-zinc-600 dark:text-zinc-300 leading-relaxed">
-                Credentials created here allow authorized professors and department coordinators to sign in at the main Certificate Studio (`/`) and generate validated Geeta University certificates with live security QR codes.
+                Credentials created here are stored securely in your Supabase cloud database, allowing professors to sign in from any device at the main Certificate Studio (`/`) and generate validated Geeta University certificates.
               </p>
             </div>
           </div>
 
           <div className="pt-3 border-t border-stone-100 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-500">
-            <span>Authentication Type: Direct Faculty ID & Password</span>
-            <span className="font-semibold text-emerald-600 dark:text-emerald-400">● Active</span>
+            <span>Database Status: Supabase Cloud Connected</span>
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">● Live Sync</span>
           </div>
         </div>
       </div>
@@ -259,7 +327,7 @@ export default function AdminFacultyDeptManager({ onDataChanged }) {
               Registered Faculty Logins
             </h3>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Manage login usernames, departments, and security passwords
+              Manage login usernames, departments, and security passwords in Supabase
             </p>
           </div>
 
@@ -284,7 +352,7 @@ export default function AdminFacultyDeptManager({ onDataChanged }) {
             >
               <option value="ALL">All Departments</option>
               {departments.map((d) => (
-                <option key={d.id} value={d.name}>
+                <option key={d.id || d.name} value={d.name}>
                   {d.name}
                 </option>
               ))}
@@ -310,21 +378,21 @@ export default function AdminFacultyDeptManager({ onDataChanged }) {
               {filteredFaculty.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-8 text-center text-zinc-400 text-xs">
-                    No faculty credentials matching your search criteria.
+                    {loading ? 'Loading faculty accounts from database...' : 'No faculty credentials matching your search criteria.'}
                   </td>
                 </tr>
               ) : (
                 filteredFaculty.map((fac) => {
-                  const isPassVisible = showPassMap[fac.id];
+                  const isPassVisible = showPassMap[fac.id || fac.facultyId];
                   return (
-                    <tr
-                      key={fac.id}
+                    <tr 
+                      key={fac.id || fac.facultyId}
                       className="hover:bg-stone-50/70 dark:hover:bg-zinc-800/40 transition-colors"
                     >
                       <td className="py-2.5 px-3.5 font-bold text-zinc-900 dark:text-zinc-100">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center font-bold text-[10px]">
-                            {fac.name.charAt(0)}
+                            {fac.name ? fac.name.charAt(0) : 'F'}
                           </div>
                           <span>{fac.name}</span>
                         </div>
@@ -351,7 +419,7 @@ export default function AdminFacultyDeptManager({ onDataChanged }) {
                           </span>
                           <button
                             type="button"
-                            onClick={() => togglePasswordVisibility(fac.id)}
+                            onClick={() => togglePasswordVisibility(fac.id || fac.facultyId)}
                             className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors cursor-pointer"
                             title={isPassVisible ? 'Hide Password' : 'Show Password'}
                           >
@@ -362,7 +430,7 @@ export default function AdminFacultyDeptManager({ onDataChanged }) {
 
                       <td className="py-2.5 px-3.5">
                         <span className="px-2 py-0.5 text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded-md border border-emerald-200/80">
-                          Active
+                          {fac.status || 'Active'}
                         </span>
                       </td>
 
@@ -457,15 +525,18 @@ export default function AdminFacultyDeptManager({ onDataChanged }) {
                 <button
                   type="button"
                   onClick={() => setShowAddDeptModal(false)}
+                  disabled={submittingDept}
                   className="px-3.5 py-2 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 rounded-xl text-xs font-semibold shadow-xs cursor-pointer"
+                  disabled={submittingDept}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 rounded-xl text-xs font-semibold shadow-xs cursor-pointer disabled:opacity-50"
                 >
-                  Save Department
+                  {submittingDept && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{submittingDept ? 'Saving to Cloud...' : 'Save Department'}</span>
                 </button>
               </div>
             </form>
@@ -541,7 +612,7 @@ export default function AdminFacultyDeptManager({ onDataChanged }) {
                     className="w-full bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-zinc-900 dark:text-zinc-100 text-xs focus:outline-none focus:border-zinc-400 cursor-pointer"
                   >
                     {departments.map((d) => (
-                      <option key={d.id} value={d.name}>
+                      <option key={d.id || d.name} value={d.name}>
                         {d.name}
                       </option>
                     ))}
@@ -589,15 +660,18 @@ export default function AdminFacultyDeptManager({ onDataChanged }) {
                 <button
                   type="button"
                   onClick={() => setShowAddFacModal(false)}
+                  disabled={submittingFac}
                   className="px-3.5 py-2 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:bg-stone-100 dark:hover:bg-zinc-800 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 rounded-xl text-xs font-semibold shadow-xs cursor-pointer"
+                  disabled={submittingFac}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 rounded-xl text-xs font-semibold shadow-xs cursor-pointer disabled:opacity-50"
                 >
-                  Create Faculty Credentials
+                  {submittingFac && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{submittingFac ? 'Saving to Cloud...' : 'Create Faculty Credentials'}</span>
                 </button>
               </div>
             </form>
