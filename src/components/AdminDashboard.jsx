@@ -187,7 +187,7 @@ export default function AdminDashboard({ onLogout, onBackToStudio, onOpenVerify 
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 flex flex-col">
+    <div className="h-screen w-full overflow-y-auto overflow-x-hidden custom-scrollbar bg-[#f8f9fa] dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 flex flex-col">
       {/* Top Admin Header */}
       <header className="h-20 shrink-0 border-b border-stone-200/90 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/95 backdrop-blur-md sticky top-0 z-30 px-4 sm:px-6 lg:px-8">
         <div className="h-full w-full flex items-center justify-between">
@@ -249,7 +249,7 @@ export default function AdminDashboard({ onLogout, onBackToStudio, onOpenVerify 
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
+      <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 pb-16 space-y-6">
         {/* Metric Cards (Database Node card completely removed) */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-white dark:bg-zinc-900 border border-stone-200/80 dark:border-zinc-800/80 rounded-2xl p-4 shadow-xs flex items-center justify-between">
