@@ -378,12 +378,15 @@ export const authenticateFaculty = async (usernameOrId, password, selectedDepart
     };
   }
 
-  const checkDepartmentMismatch = (userDept, facId) => {
-    if (selectedDepartment && userDept) {
+  const checkDepartmentMismatch = (userDept) => {
+    if (!selectedDepartment) {
+      return 'Please select your department.';
+    }
+    if (userDept) {
       const cleanSelected = selectedDepartment.trim().toLowerCase();
       const cleanActual = userDept.trim().toLowerCase();
       if (cleanSelected !== cleanActual) {
-        return `Department mismatch: Faculty ID "${facId}" belongs to "${userDept}". Please select "${userDept}" from the Department / School list.`;
+        return 'Please select your correct department.';
       }
     }
     return null;
@@ -401,7 +404,7 @@ export const authenticateFaculty = async (usernameOrId, password, selectedDepart
       if (!error && Array.isArray(data) && data.length > 0) {
         const matched = data[0];
         if (matched.password === cleanPass || cleanPass === 'geeta@123' || cleanPass === 'geeta @123') {
-          const deptError = checkDepartmentMismatch(matched.department, matched.faculty_id || matched.name);
+          const deptError = checkDepartmentMismatch(matched.department);
           if (deptError) {
             return { success: false, message: deptError };
           }
@@ -432,7 +435,7 @@ export const authenticateFaculty = async (usernameOrId, password, selectedDepart
 
   if (matchedLocal) {
     if (matchedLocal.password === cleanPass || cleanPass === 'geeta@123' || cleanPass === 'geeta @123') {
-      const deptError = checkDepartmentMismatch(matchedLocal.department, matchedLocal.facultyId || matchedLocal.name);
+      const deptError = checkDepartmentMismatch(matchedLocal.department);
       if (deptError) {
         return { success: false, message: deptError };
       }
@@ -453,7 +456,7 @@ export const authenticateFaculty = async (usernameOrId, password, selectedDepart
   // 4. Default generic faculty keyword fallback
   if (cleanId === 'faculty' && (cleanPass === 'geeta@123' || cleanPass === 'geeta @123')) {
     const defaultDept = 'Department of Arts & Humanities';
-    const deptError = checkDepartmentMismatch(defaultDept, 'faculty');
+    const deptError = checkDepartmentMismatch(defaultDept);
     if (deptError) {
       return { success: false, message: deptError };
     }

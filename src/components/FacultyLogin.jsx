@@ -15,7 +15,8 @@ import {
   Moon,
   Eye,
   EyeOff,
-  Loader2
+  Loader2,
+  ChevronDown
 } from 'lucide-react';
 
 export default function FacultyLogin({ 
@@ -28,7 +29,7 @@ export default function FacultyLogin({
   const [facultyId, setFacultyId] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [department, setDepartment] = useState(() => getDepartments()[0]?.name || 'Department of Arts & Humanities');
+  const [department, setDepartment] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -36,7 +37,6 @@ export default function FacultyLogin({
     fetchDepartments().then(depts => {
       if (depts && depts.length > 0) {
         setDepartments(depts);
-        setDepartment(prev => prev || depts[0].name);
       }
     }).catch(err => console.warn('Departments fetch notice:', err));
   }, []);
@@ -44,6 +44,12 @@ export default function FacultyLogin({
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!department) {
+      setError('Please select your department.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -152,16 +158,26 @@ export default function FacultyLogin({
               <div className="relative">
                 <Building2 className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <select
+                  required
                   value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  className="w-full bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl pl-9 pr-3.5 py-2.5 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 transition-all text-xs sm:text-sm appearance-none cursor-pointer"
+                  onChange={(e) => {
+                    setDepartment(e.target.value);
+                    if (error) setError('');
+                  }}
+                  className={`w-full bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl pl-9 pr-9 py-2.5 ${
+                    department ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400 dark:text-zinc-500'
+                  } focus:outline-none focus:border-zinc-400 transition-all text-xs sm:text-sm appearance-none cursor-pointer`}
                 >
+                  <option value="" disabled className="text-zinc-400">
+                    Select your department
+                  </option>
                   {departments.map((dept) => (
-                    <option key={dept.id || dept.name} value={dept.name}>
+                    <option key={dept.id || dept.name} value={dept.name} className="text-zinc-900 dark:text-zinc-100">
                       {dept.name}
                     </option>
                   ))}
                 </select>
+                <ChevronDown className="w-4 h-4 text-zinc-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
             </div>
 
