@@ -20,7 +20,6 @@ import {
 
 export default function FacultyLogin({ 
   onLoginSuccess, 
-  onOpenAdmin,
   onOpenVerify,
   isDark,
   onToggleTheme 
@@ -93,17 +92,6 @@ export default function FacultyLogin({
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            {onOpenAdmin && (
-              <button
-                onClick={onOpenAdmin}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-stone-100/90 hover:bg-stone-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 transition-all border border-stone-200 dark:border-zinc-700 shadow-xs cursor-pointer"
-                title="Open Admin Portal"
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
-                <span className="hidden sm:inline">Admin Portal</span>
-              </button>
-            )}
-
             {onToggleTheme && (
               <button
                 onClick={onToggleTheme}

@@ -370,16 +370,11 @@ export const authenticateFaculty = async (usernameOrId, password) => {
     return { success: false, message: 'Please enter both Faculty ID and password.' };
   }
 
-  // 1. Allow Master Administrator Login
-  if (cleanId === 'admin' && (cleanPass === 'geeta@123' || cleanPass === 'geeta @123')) {
+  // 1. Explicitly Disallow Administrator Login on Faculty Portal
+  if (cleanId === 'admin') {
     return {
-      success: true,
-      user: {
-        name: 'Administrator',
-        facultyId: 'admin',
-        department: 'University Administration',
-        designation: 'Admin'
-      }
+      success: false,
+      message: 'Administrator accounts cannot log in through the Faculty Portal. Please access the Admin Portal directly via /admin.'
     };
   }
 

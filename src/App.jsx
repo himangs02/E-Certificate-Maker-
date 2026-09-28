@@ -257,7 +257,6 @@ export default function App() {
     return (
       <FacultyLogin
         onLoginSuccess={handleFacultyLoginSuccess}
-        onOpenAdmin={() => navigateTo('admin')}
         onOpenVerify={(code) => navigateTo('verify', code)}
         isDark={isDark}
         onToggleTheme={() => setIsDark(!isDark)}
@@ -308,15 +307,17 @@ export default function App() {
               <span>{formData.verification_code}</span>
             </div>
 
-            {/* Admin Portal Slug Button */}
-            <button
-              onClick={() => navigateTo('admin')}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-stone-100/90 hover:bg-stone-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-700 transition-all shadow-xs cursor-pointer"
-              title="Open /admin Dashboard"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
-              <span className="hidden sm:inline">Admin Portal</span>
-            </button>
+            {/* Admin Portal Link (Only visible to authenticated administrators) */}
+            {isAdminLoggedIn && (
+              <button
+                onClick={() => navigateTo('admin')}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-stone-100/90 hover:bg-stone-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-stone-200 dark:border-zinc-700 transition-all shadow-xs cursor-pointer"
+                title="Return to /admin Dashboard"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
+                <span className="hidden sm:inline">Admin Portal</span>
+              </button>
+            )}
 
             {/* Layout Inspector Toggle */}
             <button
