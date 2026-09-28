@@ -133,8 +133,8 @@ export default function App() {
     sessionStorage.setItem('geeta_faculty_auth', 'true');
     if (userData) {
       sessionStorage.setItem('geeta_faculty_user', JSON.stringify(userData));
-      // Optionally update default department if user selected one
-      if (userData.department && !formData.recipientDepartment) {
+      // Automatically set active certificate department to faculty user's verified department
+      if (userData.department) {
         setFormData(prev => ({
           ...prev,
           recipientDepartment: userData.department

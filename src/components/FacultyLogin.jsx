@@ -47,13 +47,10 @@ export default function FacultyLogin({
     setLoading(true);
 
     try {
-      const authResult = await authenticateFaculty(facultyId, password);
+      const authResult = await authenticateFaculty(facultyId, password, department);
 
       if (authResult.success) {
-        onLoginSuccess({
-          ...authResult.user,
-          department: department || authResult.user.department
-        });
+        onLoginSuccess(authResult.user);
       } else {
         setError(authResult.message || 'Invalid credentials. Please verify your Faculty ID and password.');
       }

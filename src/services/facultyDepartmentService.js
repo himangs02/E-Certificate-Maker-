@@ -362,7 +362,7 @@ export const updateFacultyUser = async (id, updatedFields) => {
 /**
  * Authenticate faculty against Supabase database with local fallback & master admin
  */
-export const authenticateFaculty = async (usernameOrId, password) => {
+export const authenticateFaculty = async (usernameOrId, password, selectedDepartment = '') => {
   const cleanId = (usernameOrId || '').trim().toLowerCase();
   const cleanPass = (password || '').trim();
 
@@ -378,6 +378,17 @@ export const authenticateFaculty = async (usernameOrId, password) => {
     };
   }
 
+  const checkDepartmentMismatch = (userDept, facId) => {
+    if (selectedDepartment && userDept) {
+      const cleanSelected = selectedDepartment.trim().toLowerCase();
+      const cleanActual = userDept.trim().toLowerCase();
+      if (cleanSelected !== cleanActual) {
+        return `Department mismatch: Faculty ID "${facId}" belongs to "${userDept}". Please select "${userDept}" from the Department / School list.`;
+      }
+    }
+    return null;
+  };
+
   // 2. Query Live Supabase Database for registered faculty credentials
   if (supabase) {
     try {
@@ -390,6 +401,11 @@ export const authenticateFaculty = async (usernameOrId, password) => {
       if (!error && Array.isArray(data) && data.length > 0) {
         const matched = data[0];
         if (matched.password === cleanPass || cleanPass === 'geeta@123' || cleanPass === 'geeta @123') {
+          const deptError = checkDepartmentMismatch(matched.department, matched.faculty_id || matched.name);
+          if (deptError) {
+            return { success: false, message: deptError };
+          }
+
           return {
             success: true,
             user: {
@@ -416,6 +432,11 @@ export const authenticateFaculty = async (usernameOrId, password) => {
 
   if (matchedLocal) {
     if (matchedLocal.password === cleanPass || cleanPass === 'geeta@123' || cleanPass === 'geeta @123') {
+      const deptError = checkDepartmentMismatch(matchedLocal.department, matchedLocal.facultyId || matchedLocal.name);
+      if (deptError) {
+        return { success: false, message: deptError };
+      }
+
       return {
         success: true,
         user: {
@@ -431,12 +452,17 @@ export const authenticateFaculty = async (usernameOrId, password) => {
 
   // 4. Default generic faculty keyword fallback
   if (cleanId === 'faculty' && (cleanPass === 'geeta@123' || cleanPass === 'geeta @123')) {
+    const defaultDept = 'Department of Arts & Humanities';
+    const deptError = checkDepartmentMismatch(defaultDept, 'faculty');
+    if (deptError) {
+      return { success: false, message: deptError };
+    }
     return {
       success: true,
       user: {
         name: 'Faculty Member',
         facultyId: 'faculty',
-        department: 'Department of Arts & Humanities',
+        department: defaultDept,
         designation: 'Faculty'
       }
     };
