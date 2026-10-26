@@ -55,6 +55,10 @@ export default function CertificatePreview({
     return () => { isMounted = false; };
   }, [formData.verification_code]);
 
+  // Current canvas dimensions based on active template
+  const canvasWidth = baseImage?.naturalWidth || CANVAS_DIMENSIONS.width;
+  const canvasHeight = baseImage?.naturalHeight || CANVAS_DIMENSIONS.height;
+
   // 1. Render certificate onto canvas whenever data, config, baseImage, or QR changes
   const render = useCallback(() => {
     const canvas = canvasRef.current;
@@ -66,7 +70,8 @@ export default function CertificatePreview({
     renderCertificate(ctx, baseImage, formData, config, {
       showGuides,
       activeField: draggedField || activeField,
-      qrImage
+      qrImage,
+      isIdeathon: config?.isIdeathon
     });
   }, [baseImage, formData, config, showGuides, activeField, draggedField, qrImage]);
 
@@ -123,10 +128,10 @@ export default function CertificatePreview({
     persistToDatabase();
 
     const cleanCanvas = document.createElement('canvas');
-    cleanCanvas.width = CANVAS_DIMENSIONS.width;
-    cleanCanvas.height = CANVAS_DIMENSIONS.height;
+    cleanCanvas.width = canvasWidth;
+    cleanCanvas.height = canvasHeight;
     const cleanCtx = cleanCanvas.getContext('2d');
-    renderCertificate(cleanCtx, baseImage, formData, config, { showGuides: false, qrImage });
+    renderCertificate(cleanCtx, baseImage, formData, config, { showGuides: false, qrImage, isIdeathon: config?.isIdeathon });
 
     const safeName = (formData.recipientName || 'Certificate').replace(/[^a-zA-Z0-9_-]/g, '_');
     downloadCanvasImage(cleanCanvas, `${safeName}_Certificate.png`, 'image/png');
@@ -140,10 +145,10 @@ export default function CertificatePreview({
     persistToDatabase();
 
     const cleanCanvas = document.createElement('canvas');
-    cleanCanvas.width = CANVAS_DIMENSIONS.width;
-    cleanCanvas.height = CANVAS_DIMENSIONS.height;
+    cleanCanvas.width = canvasWidth;
+    cleanCanvas.height = canvasHeight;
     const cleanCtx = cleanCanvas.getContext('2d');
-    renderCertificate(cleanCtx, baseImage, formData, config, { showGuides: false, qrImage });
+    renderCertificate(cleanCtx, baseImage, formData, config, { showGuides: false, qrImage, isIdeathon: config?.isIdeathon });
 
     const safeName = (formData.recipientName || 'Certificate').replace(/[^a-zA-Z0-9_-]/g, '_');
     downloadCanvasImage(cleanCanvas, `${safeName}_Certificate.jpg`, 'image/jpeg', 0.98);
@@ -157,10 +162,10 @@ export default function CertificatePreview({
     persistToDatabase();
 
     const cleanCanvas = document.createElement('canvas');
-    cleanCanvas.width = CANVAS_DIMENSIONS.width;
-    cleanCanvas.height = CANVAS_DIMENSIONS.height;
+    cleanCanvas.width = canvasWidth;
+    cleanCanvas.height = canvasHeight;
     const cleanCtx = cleanCanvas.getContext('2d');
-    renderCertificate(cleanCtx, baseImage, formData, config, { showGuides: false, qrImage });
+    renderCertificate(cleanCtx, baseImage, formData, config, { showGuides: false, qrImage, isIdeathon: config?.isIdeathon });
 
     const safeName = (formData.recipientName || 'Certificate').replace(/[^a-zA-Z0-9_-]/g, '_');
     exportCanvasToPDF(cleanCanvas, `${safeName}_Certificate.pdf`);
@@ -173,8 +178,8 @@ export default function CertificatePreview({
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
-    const scaleX = CANVAS_DIMENSIONS.width / rect.width;
-    const scaleY = CANVAS_DIMENSIONS.height / rect.height;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
 
     const clientX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
     const clientY = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
@@ -306,15 +311,18 @@ export default function CertificatePreview({
         >
           <canvas
             ref={canvasRef}
-            width={CANVAS_DIMENSIONS.width}
-            height={CANVAS_DIMENSIONS.height}
+            width={canvasWidth}
+            height={canvasHeight}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onTouchStart={handleMouseDown}
             onTouchMove={handleMouseMove}
             onTouchEnd={handleMouseUp}
-            className={`h-full max-h-full w-auto aspect-[1200/1700] object-contain rounded-lg certificate-paper-shadow cursor-crosshair bg-white ${
+            style={{
+              aspectRatio: `${canvasWidth} / ${canvasHeight}`
+            }}
+            className={`h-full max-h-full max-w-full w-auto object-contain rounded-lg certificate-paper-shadow cursor-crosshair bg-white ${
               isDragging ? 'cursor-grabbing' : ''
             }`}
           />
@@ -362,11 +370,11 @@ export default function CertificatePreview({
               onClick={() => {
                 if (baseImage) {
                   const cleanCanvas = document.createElement('canvas');
-                  cleanCanvas.width = CANVAS_DIMENSIONS.width;
-                  cleanCanvas.height = CANVAS_DIMENSIONS.height;
+                  cleanCanvas.width = canvasWidth;
+                  cleanCanvas.height = canvasHeight;
                   const cleanCtx = cleanCanvas.getContext('2d');
-                  cleanCtx.drawImage(baseImage, 0, 0, CANVAS_DIMENSIONS.width, CANVAS_DIMENSIONS.height);
-                  downloadCanvasImage(cleanCanvas, 'Geeta_University_Blank_Template.png', 'image/png');
+                  cleanCtx.drawImage(baseImage, 0, 0, canvasWidth, canvasHeight);
+                  downloadCanvasImage(cleanCanvas, `${formData.recipientName ? formData.recipientName.replace(/[^a-zA-Z0-9]/g, '_') : 'Certificate'}_Blank_Template.png`, 'image/png');
                   notifyExport('Blank Template Saved');
                 }
               }}

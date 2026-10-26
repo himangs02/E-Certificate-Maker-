@@ -135,6 +135,43 @@ export function renderCertificate(ctx, baseImage, formData, config, options = {}
   };
 
   // 5. Draw Variable Items
+  const isIdeathon = Boolean(options.isIdeathon || config?.isIdeathon);
+
+  if (isIdeathon) {
+    // For Ideathon 2026 Certificate, only the recipient/student name is drawn on the line under "This is to certify that"
+    drawTextItem("recipientName", formData.recipientName, "Student Name");
+
+    // Optional QR code if enabled in config
+    if (config.qrCode && config.qrCode.enabled) {
+      const cfg = config.qrCode;
+      const qrImg = options.qrImage || formData.qrImageElement;
+      const qrSize = cfg.size || 140;
+      const qrX = cfg.x;
+      const qrY = cfg.y;
+
+      ctx.save();
+      if (qrImg && qrImg.complete && qrImg.naturalWidth !== 0) {
+        const pad = 6;
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(qrX - qrSize / 2 - pad, qrY - pad, qrSize + pad * 2, qrSize + pad * 2);
+        ctx.strokeStyle = "rgba(0, 0, 0, 0.08)";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(qrX - qrSize / 2 - pad, qrY - pad, qrSize + pad * 2, qrSize + pad * 2);
+        ctx.drawImage(qrImg, qrX - qrSize / 2, qrY, qrSize, qrSize);
+      }
+
+      if (showGuides) {
+        ctx.strokeStyle = activeField === "qrCode" ? "#3B82F6" : "rgba(234, 88, 12, 0.4)";
+        ctx.lineWidth = activeField === "qrCode" ? 2 : 1;
+        ctx.setLineDash(activeField === "qrCode" ? [] : [4, 4]);
+        ctx.strokeRect(qrX - qrSize / 2 - 6, qrY - 6, qrSize + 12, qrSize + 12);
+      }
+      ctx.restore();
+    }
+    return;
+  }
+
+  // Standard Default Certificate Overlay:
   // Intro Line
   drawTextItem("introLine", config.introLine?.text || "This certificate is proudly presented to");
 

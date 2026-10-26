@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { PRESETS } from '../constants/presets';
 import { getDepartments, fetchDepartments } from '../services/facultyDepartmentService';
+import { isCSEDepartment } from '../utils/defaultTemplateGenerator';
 import { 
   User, 
   GraduationCap, 
@@ -17,7 +18,8 @@ import {
   Award,
   Users,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Sparkles
 } from 'lucide-react';
 
 const APPRECIATION_TEMPLATES = [
@@ -43,6 +45,7 @@ export default function CertificateForm({
   setFormData,
   onApplyPreset,
   templateImageInfo,
+  onSelectTemplate,
   onUploadImage,
   onResetToDefaultTemplate,
   activeField,
@@ -50,11 +53,13 @@ export default function CertificateForm({
   showTuner,
   setShowTuner,
   config,
-  onChangeConfig
+  onChangeConfig,
+  facultyUser
 }) {
   const fileInputRef = useRef(null);
-  const [showAdvancedTemplate, setShowAdvancedTemplate] = useState(false);
+  const [showAdvancedTemplate, setShowAdvancedTemplate] = useState(true);
   const [departmentList, setDepartmentList] = useState(() => getDepartments());
+  const isCSE = isCSEDepartment(formData.department, facultyUser?.department);
 
   useEffect(() => {
     fetchDepartments().then(depts => {
@@ -124,6 +129,22 @@ export default function CertificateForm({
       {/* 2. Certificate Details Form - Compact & Single-Page Optimized */}
       <div className="bg-white dark:bg-zinc-900 border border-stone-200/80 dark:border-zinc-800/80 rounded-xl p-3.5 sm:p-4 shadow-xs space-y-3.5 transition-colors">
         
+        {/* Ideathon Active Notice */}
+        {templateImageInfo?.isIdeathon && (
+          <div className="p-3 bg-orange-50/90 dark:bg-orange-950/40 border border-orange-200/90 dark:border-orange-800/60 rounded-xl space-y-1 animate-fadeIn">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-orange-900 dark:text-orange-200">
+              <Sparkles className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 shrink-0" />
+              <span>Ideathon 2026 Background Template Active</span>
+              <span className="ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded bg-orange-200/70 dark:bg-orange-900/60 text-orange-800 dark:text-orange-200">
+                CSE Exclusive
+              </span>
+            </div>
+            <p className="text-[11px] text-orange-800/80 dark:text-orange-300/80 leading-relaxed">
+              Student names typed below or uploaded via Excel will be placed <strong>directly on the line under "This is to certify that"</strong>. All event details (6th Oct 2026) and 4 executive signatures are pre-embossed.
+            </p>
+          </div>
+        )}
+
         {/* Group 1: Recipient Information */}
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -141,8 +162,14 @@ export default function CertificateForm({
             {/* Recipient Name with Font Selector */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
-                  Full Name <span className="text-orange-600 font-bold">*</span>
+                <label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                  <span>Full Name</span>
+                  <span className="text-orange-600 font-bold">*</span>
+                  {templateImageInfo?.isIdeathon && (
+                    <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-1.5 py-0.2 rounded-md">
+                      Prints on certificate line
+                    </span>
+                  )}
                 </label>
                 {config?.recipientName && onChangeConfig && (
                   <div className="flex items-center gap-1.5">
@@ -392,24 +419,95 @@ export default function CertificateForm({
           <button
             type="button"
             onClick={() => setShowAdvancedTemplate(!showAdvancedTemplate)}
-            className="w-full flex items-center justify-between text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors py-0.5"
+            className="w-full flex items-center justify-between text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors py-0.5 cursor-pointer"
           >
             <span className="flex items-center gap-2">
               <div className="w-5 h-5 rounded-md bg-stone-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300">
                 <ImageIcon className="w-3 h-3" />
               </div>
-              <span className="font-medium text-zinc-800 dark:text-zinc-200 text-xs">
+              <span className="font-semibold text-zinc-800 dark:text-zinc-200 text-xs">
                 Background Template Image
               </span>
+              {isCSE && (
+                <span className="px-1.5 py-0.5 text-[9px] font-bold bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 rounded border border-orange-200 dark:border-orange-800/70">
+                  CSE Department
+                </span>
+              )}
               <span className="text-[10px] text-zinc-400 font-normal">
-                ({templateImageInfo.isCustom ? 'Custom' : 'Official Blank'})
+                ({templateImageInfo.isIdeathon ? 'Ideathon 2026' : templateImageInfo.isCustom ? 'Custom' : 'Official Blank'})
               </span>
             </span>
             {showAdvancedTemplate ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
 
           {showAdvancedTemplate && (
-            <div className="mt-2 p-2.5 bg-stone-50 dark:bg-zinc-950/60 rounded-lg border border-stone-200/80 dark:border-zinc-800/80 space-y-2 animate-fadeIn">
+            <div className="mt-2 p-3 bg-stone-50 dark:bg-zinc-950/60 rounded-xl border border-stone-200/80 dark:border-zinc-800/80 space-y-3 animate-fadeIn">
+              
+              {/* Direct Template Switcher for Computer Science and Engineering Department ONLY */}
+              {isCSE ? (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-zinc-800 dark:text-zinc-200">
+                      Switch Background Template:
+                    </span>
+                    <span className="text-[10px] text-orange-600 dark:text-orange-400 font-medium">
+                      Computer Science & Engineering
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {/* Option 1: Official Default University Blank Template */}
+                    <button
+                      type="button"
+                      onClick={() => onSelectTemplate && onSelectTemplate('default')}
+                      className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                        !templateImageInfo.isIdeathon && !templateImageInfo.isCustom
+                          ? 'border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs'
+                          : 'border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-stone-300 text-zinc-700 dark:text-zinc-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] font-mono uppercase tracking-wider opacity-75">Portrait A4</span>
+                        {(!templateImageInfo.isIdeathon && !templateImageInfo.isCustom) && (
+                          <Check className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-600" />
+                        )}
+                      </div>
+                      <div className="font-semibold text-xs truncate">Default Blank</div>
+                      <div className="text-[10px] opacity-75 truncate">Standard University Template</div>
+                    </button>
+
+                    {/* Option 2: Ideathon 2026 Certificate Template (CSE Exclusive) */}
+                    <button
+                      type="button"
+                      onClick={() => onSelectTemplate && onSelectTemplate('ideathon-2026')}
+                      className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer relative ${
+                        templateImageInfo.isIdeathon
+                          ? 'border-orange-600 bg-orange-600 text-white shadow-xs ring-2 ring-orange-500/20'
+                          : 'border-orange-300/80 dark:border-orange-800/70 bg-orange-50/50 dark:bg-orange-950/20 hover:border-orange-400 text-zinc-800 dark:text-zinc-200'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className={`text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.2 rounded font-semibold ${
+                          templateImageInfo.isIdeathon ? 'bg-white/20 text-white' : 'bg-orange-200/70 text-orange-800 dark:bg-orange-900/60 dark:text-orange-200'
+                        }`}>
+                          CSE Exclusive
+                        </span>
+                        {templateImageInfo.isIdeathon && (
+                          <Check className="w-3.5 h-3.5 text-white" />
+                        )}
+                      </div>
+                      <div className="font-semibold text-xs truncate">Ideathon 2026</div>
+                      <div className="text-[10px] opacity-85 truncate">Landscape · Student Line</div>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                  <span>Standard Certificate Template active for <strong>{formData.department || 'Selected Department'}</strong>.</span>
+                </div>
+              )}
+
+              {/* Upload Custom File */}
               <input
                 type="file"
                 ref={fileInputRef}
@@ -418,21 +516,21 @@ export default function CertificateForm({
                 className="hidden"
               />
 
-              <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex flex-col sm:flex-row gap-2 pt-1 border-t border-stone-200/70 dark:border-zinc-800/70">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white dark:bg-zinc-900 border border-stone-300 dark:border-zinc-700 hover:border-zinc-400 text-zinc-800 dark:text-zinc-200 rounded-lg text-xs font-medium transition-all shadow-xs"
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white dark:bg-zinc-900 border border-stone-300 dark:border-zinc-700 hover:border-zinc-400 text-zinc-800 dark:text-zinc-200 rounded-lg text-xs font-medium transition-all shadow-xs cursor-pointer"
                 >
                   <Upload className="w-3.5 h-3.5 text-zinc-500" />
-                  <span>Upload Custom Background</span>
+                  <span>Upload Other Image</span>
                 </button>
 
-                {templateImageInfo.isCustom && (
+                {templateImageInfo.isCustom && !templateImageInfo.isIdeathon && (
                   <button
                     type="button"
                     onClick={onResetToDefaultTemplate}
-                    className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-stone-200/80 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg text-xs font-medium hover:bg-stone-300/80 dark:hover:bg-zinc-700 transition-all"
+                    className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-stone-200/80 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg text-xs font-medium hover:bg-stone-300/80 dark:hover:bg-zinc-700 transition-all cursor-pointer"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>Reset Default</span>
@@ -440,9 +538,16 @@ export default function CertificateForm({
                 )}
               </div>
 
-              <div className="text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                <span>Active: <strong className="font-medium text-zinc-700 dark:text-zinc-300">{templateImageInfo.name}</strong></span>
+              <div className="text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  <span>Active: <strong className="font-medium text-zinc-700 dark:text-zinc-300">{templateImageInfo.name}</strong></span>
+                </span>
+                {templateImageInfo.isIdeathon && (
+                  <span className="text-orange-600 dark:text-orange-400 font-mono text-[9px] uppercase">
+                    3660 x 2481 · Landscape A4
+                  </span>
+                )}
               </div>
             </div>
           )}

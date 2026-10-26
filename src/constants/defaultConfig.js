@@ -11,6 +11,11 @@ export const CANVAS_DIMENSIONS = {
   height: 1700,
 };
 
+export const IDEATHON_DIMENSIONS = {
+  width: 3660,
+  height: 2481,
+};
+
 export const DEFAULT_TEXT_CONFIG = {
   // 1. Introductory Line: "This certificate is proudly presented to"
   introLine: {
@@ -156,6 +161,39 @@ export const DEFAULT_TEXT_CONFIG = {
     fontWeight: "600",
     color: "#475569",
     align: "center",
+  }
+};
+
+export const IDEATHON_TEXT_CONFIG = {
+  isIdeathon: true,
+  // 1. Recipient / Student Name: Positioned directly on the line under "This is to certify that"
+  recipientName: {
+    label: "Student Name",
+    x: 1718, // Center of line (runs from x=726 to x=2703, midpoint = 1714.5)
+    y: 1475, // Positioned on line (y=1548) with descenders clearing
+    fontSize: 78,
+    fontFamily: "'Montserrat', sans-serif",
+    fontWeight: "700",
+    fontStyle: "normal",
+    color: "#0F172A",
+    align: "center",
+    letterSpacing: 0.5,
+    maxWidth: 1900,
+  },
+
+  // 2. Security QR Code (Optional, positioned in top-right corner dot grid)
+  qrCode: {
+    label: "Security QR Code (Top Right)",
+    x: 3450,
+    y: 180,
+    size: 150,
+    showCode: true,
+    fontFamily: "'Montserrat', sans-serif",
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#475569",
+    align: "center",
+    enabled: false, // Disabled by default to keep the official Ideathon artwork pristine
   }
 };
 

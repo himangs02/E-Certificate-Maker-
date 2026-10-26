@@ -7,9 +7,9 @@ import AdminDashboard from './components/AdminDashboard';
 import AdminLogin from './components/AdminLogin';
 import CertificateVerification from './components/CertificateVerification';
 import FacultyLogin from './components/FacultyLogin';
-import { DEFAULT_TEXT_CONFIG } from './constants/defaultConfig';
+import { DEFAULT_TEXT_CONFIG, IDEATHON_TEXT_CONFIG } from './constants/defaultConfig';
 import { PRESETS } from './constants/presets';
-import { createDefaultTemplateDataUrl } from './utils/defaultTemplateGenerator';
+import { createDefaultTemplateDataUrl, createIdeathonTemplateDataUrl } from './utils/defaultTemplateGenerator';
 import { generateVerificationCode, getVerificationUrl } from './utils/qrGenerator';
 import { saveCertificate } from './services/supabase';
 import geetaLogo from './assets/geeta_logo_transparent.png';
@@ -137,6 +137,7 @@ export default function App() {
       if (userData.department) {
         setFormData(prev => ({
           ...prev,
+          department: userData.department,
           recipientDepartment: userData.department
         }));
       }
@@ -188,6 +189,44 @@ export default function App() {
     }));
   };
 
+  // Handle Direct Template Selection: 'default' | 'ideathon-2026'
+  const handleSelectTemplate = (templateId) => {
+    if (templateId === 'ideathon-2026') {
+      const ideathonDataUrl = createIdeathonTemplateDataUrl();
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = ideathonDataUrl;
+      img.onload = () => {
+        setBaseImage(img);
+        setTemplateInfo({
+          id: 'ideathon-2026',
+          name: 'Ideathon 2026 Participation Certificate',
+          isCustom: true,
+          isIdeathon: true,
+        });
+        setConfig({
+          ...IDEATHON_TEXT_CONFIG,
+          isIdeathon: true,
+        });
+      };
+    } else {
+      const defaultDataUrl = createDefaultTemplateDataUrl();
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = defaultDataUrl;
+      img.onload = () => {
+        setBaseImage(img);
+        setTemplateInfo({
+          id: 'default',
+          name: 'Geeta University Certificate of Appreciation',
+          isCustom: false,
+          isIdeathon: false,
+        });
+        setConfig(DEFAULT_TEXT_CONFIG);
+      };
+    }
+  };
+
   // Handle Custom Template Image Upload
   const handleUploadImage = (dataUrl, fileName) => {
     const img = new Image();
@@ -196,30 +235,33 @@ export default function App() {
     img.onload = () => {
       setBaseImage(img);
       setTemplateInfo({
+        id: 'custom',
         name: fileName || 'Custom Template',
         isCustom: true,
+        isIdeathon: false,
       });
+      setConfig(prev => ({
+        ...prev,
+        isIdeathon: false
+      }));
     };
   };
 
   // Handle Reset to Default Template
   const handleResetToDefaultTemplate = () => {
-    const defaultDataUrl = createDefaultTemplateDataUrl();
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.src = defaultDataUrl;
-    img.onload = () => {
-      setBaseImage(img);
-      setTemplateInfo({
-        name: 'Geeta University Certificate of Appreciation',
-        isCustom: false,
-      });
-    };
+    handleSelectTemplate('default');
   };
 
   // Reset coordinates to factory defaults
   const handleResetDefaults = () => {
-    setConfig(DEFAULT_TEXT_CONFIG);
+    if (templateInfo?.isIdeathon) {
+      setConfig({
+        ...IDEATHON_TEXT_CONFIG,
+        isIdeathon: true
+      });
+    } else {
+      setConfig(DEFAULT_TEXT_CONFIG);
+    }
   };
 
   // --- ROUTE 1: ADMIN PORTAL (/admin) ---
@@ -385,6 +427,7 @@ export default function App() {
               setFormData={setFormData}
               onApplyPreset={handleApplyPreset}
               templateImageInfo={templateInfo}
+              onSelectTemplate={handleSelectTemplate}
               onUploadImage={handleUploadImage}
               onResetToDefaultTemplate={handleResetToDefaultTemplate}
               activeField={activeField}
@@ -394,6 +437,7 @@ export default function App() {
               config={config}
               onChangeConfig={setConfig}
               onOpenBatchModal={() => setIsBatchModalOpen(true)}
+              facultyUser={facultyUser}
             />
           </div>
 
@@ -404,6 +448,7 @@ export default function App() {
               config={config}
               onChangeConfig={setConfig}
               baseImage={baseImage}
+              templateInfo={templateInfo}
               showGuides={showGuides}
               setShowGuides={setShowGuides}
               activeField={activeField}
@@ -439,6 +484,7 @@ export default function App() {
         baseImage={baseImage}
         config={config}
         formData={formData}
+        templateInfo={templateInfo}
         defaultParagraph={formData.appreciationParagraph}
       />
     </div>

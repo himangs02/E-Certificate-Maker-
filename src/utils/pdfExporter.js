@@ -23,10 +23,11 @@ export function exportCanvasToPDF(canvas, filename = "certificate.pdf") {
   if (!canvas) return;
 
   const imgData = canvas.toDataURL("image/jpeg", 1.0);
+  const isLandscape = canvas.width > canvas.height;
   
-  // A4 dimensions in mm (Portrait: 210 x 297 mm)
+  // A4 dimensions in mm (Portrait: 210 x 297 mm, Landscape: 297 x 210 mm)
   const pdf = new jsPDF({
-    orientation: "portrait",
+    orientation: isLandscape ? "landscape" : "portrait",
     unit: "mm",
     format: "a4",
   });
@@ -45,8 +46,10 @@ export function exportCanvasToPDF(canvas, filename = "certificate.pdf") {
 export function generateCanvasPDFArrayBuffer(canvas) {
   if (!canvas) return null;
   const imgData = canvas.toDataURL("image/jpeg", 1.0);
+  const isLandscape = canvas.width > canvas.height;
+  
   const pdf = new jsPDF({
-    orientation: "portrait",
+    orientation: isLandscape ? "landscape" : "portrait",
     unit: "mm",
     format: "a4",
   });

@@ -70,9 +70,11 @@ export default function BatchGeneratorModal({
   baseImage,
   config,
   formData = {},
-  defaultParagraph
+  defaultParagraph,
+  templateInfo = {}
 }) {
   const fileInputRef = useRef(null);
+  const isIdeathon = Boolean(templateInfo?.isIdeathon || config?.isIdeathon);
   const [records, setRecords] = useState(INITIAL_DEMO_RECORDS);
   const [fileName, setFileName] = useState('Sample_Students_List.xlsx');
   const [outputFormat, setOutputFormat] = useState('pdf'); // 'pdf' | 'png' | 'jpg'
@@ -223,6 +225,21 @@ export default function BatchGeneratorModal({
    * Download pre-formatted official Excel template (.xlsx)
    */
   const handleDownloadSampleExcel = () => {
+    if (isIdeathon) {
+      const sampleData = [
+        { 'Student Name': 'Mr. Rahul Sharma' },
+        { 'Student Name': 'Ms. Ananya Roy' },
+        { 'Student Name': 'Mr. Amit Verma' },
+        { 'Student Name': 'Dr. Priya Sharma' },
+      ];
+      const ws = XLSX.utils.json_to_sheet(sampleData);
+      ws['!cols'] = [{ wch: 30 }];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Ideathon Participants');
+      XLSX.writeFile(wb, 'Ideathon_2026_Students_Batch_Template.xlsx');
+      return;
+    }
+
     const sampleData = [
       {
         'Student Name': 'Mr. Rahul Sharma',
@@ -315,8 +332,10 @@ export default function BatchGeneratorModal({
       const folder = zip.folder(folderName);
 
       const offCanvas = document.createElement('canvas');
-      offCanvas.width = CANVAS_DIMENSIONS.width;
-      offCanvas.height = CANVAS_DIMENSIONS.height;
+      const canvasWidth = baseImage?.naturalWidth || (isIdeathon ? 3660 : CANVAS_DIMENSIONS.width);
+      const canvasHeight = baseImage?.naturalHeight || (isIdeathon ? 2481 : CANVAS_DIMENSIONS.height);
+      offCanvas.width = canvasWidth;
+      offCanvas.height = canvasHeight;
       const offCtx = offCanvas.getContext('2d');
 
       for (let i = 0; i < records.length; i++) {
@@ -336,7 +355,7 @@ export default function BatchGeneratorModal({
         const qrImg = await createQrImageElement(qrUrl, { size: 256 });
 
         // 2. Render onto canvas
-        renderCertificate(offCtx, baseImage, fullRecord, config, { showGuides: false, qrImage: qrImg });
+        renderCertificate(offCtx, baseImage, fullRecord, config, { showGuides: false, qrImage: qrImg, isIdeathon });
 
         // 3. Save to Supabase Registry in background
         saveCertificate({
@@ -426,7 +445,31 @@ export default function BatchGeneratorModal({
         </div>
 
         {/* Modal Scrollable Body */}
-        <div className="p-4 sm:p-6 overflow-y-auto space-y-5 text-xs flex-1 custom-scrollbar">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 text-xs flex-1 custom-scrollbar">
+
+          {/* Active Template Notice */}
+          {isIdeathon ? (
+            <div className="p-3 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/60 rounded-xl flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+                <span className="font-semibold text-orange-950 dark:text-orange-200">
+                  Active Template: Ideathon 2026 Certificate (Landscape A4 · Computer Science & Engineering)
+                </span>
+              </div>
+              <span className="text-[11px] text-orange-700 dark:text-orange-300 hidden sm:inline">
+                Student names render on the line under "This is to certify that"
+              </span>
+            </div>
+          ) : (
+            <div className="p-2.5 bg-stone-50 dark:bg-zinc-950/60 border border-stone-200 dark:border-zinc-800 rounded-xl flex items-center justify-between text-zinc-600 dark:text-zinc-400">
+              <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                Active Template: {templateInfo.name || 'Geeta University Certificate of Appreciation'} (Portrait)
+              </span>
+              <span className="text-[11px] text-zinc-400">
+                Official Blank Layout
+              </span>
+            </div>
+          )}
 
           {/* Top Row: File Dropzone & Template Helper */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4">

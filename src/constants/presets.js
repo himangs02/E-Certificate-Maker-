@@ -52,5 +52,24 @@ export const PRESETS = [
       showDateLine: true,
       showRefLine: true,
     }
+  },
+  {
+    id: "ideathon-participation",
+    name: "Ideathon · 2026",
+    subtitle: "CSE & IEEE Ideathon",
+    category: "Participation",
+    data: {
+      recipientName: "Mr. Rahul Sharma",
+      designation: "B.Tech CSE 3rd Year",
+      department: "Department of Computer Science & Engineering",
+      actionAchievement: "has actively participated in Ideathon 2026",
+      organizedByDate: "Organized by IEEE Student Branch, Geeta University on 6th October 2026.",
+      appreciationParagraph: "In recognition of innovative thinking and active participation in Ideathon 2026.",
+      issueDate: "6th October 2026",
+      refNumber: "GU/CSE/IDEA/042",
+      showDateLine: true,
+      showRefLine: true,
+    }
   }
 ];
+
