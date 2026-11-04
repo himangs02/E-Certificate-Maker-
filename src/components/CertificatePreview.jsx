@@ -55,9 +55,10 @@ export default function CertificatePreview({
     return () => { isMounted = false; };
   }, [formData.verification_code]);
 
-  // Current canvas dimensions based on active template
-  const canvasWidth = baseImage?.naturalWidth || CANVAS_DIMENSIONS.width;
-  const canvasHeight = baseImage?.naturalHeight || CANVAS_DIMENSIONS.height;
+  // Current canvas dimensions based on active template (Horizontal / Landscape standard)
+  const isIdeathon = Boolean(config?.isIdeathon || templateInfo?.isIdeathon);
+  const canvasWidth = isIdeathon ? (baseImage?.naturalWidth || 3660) : (baseImage?.naturalWidth && baseImage.naturalWidth >= baseImage.naturalHeight ? baseImage.naturalWidth : CANVAS_DIMENSIONS.width);
+  const canvasHeight = isIdeathon ? (baseImage?.naturalHeight || 2481) : (baseImage?.naturalHeight && baseImage.naturalWidth >= baseImage.naturalHeight ? baseImage.naturalHeight : CANVAS_DIMENSIONS.height);
 
   // 1. Render certificate onto canvas whenever data, config, baseImage, or QR changes
   const render = useCallback(() => {

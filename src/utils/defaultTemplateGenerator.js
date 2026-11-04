@@ -6,16 +6,16 @@ export const IDEATHON_TEMPLATE_URL = ideathonTemplateUrl;
 
 /**
  * Pixel-accurate blank base certificate template generator for Geeta University.
- * Uses the authentic high-resolution base template image.
+ * Uses the authentic high-resolution landscape base template image.
  */
-export function drawDefaultTemplate(ctx, width = 1200, height = 1700) {
+export function drawDefaultTemplate(ctx, width = 1700, height = 1200) {
   const img = new Image();
   img.src = defaultTemplateUrl;
   if (img.complete && img.naturalWidth !== 0) {
     ctx.drawImage(img, 0, 0, width, height);
   } else {
     // Ivory fallback if image is still loading
-    ctx.fillStyle = "#FAF8F5";
+    ctx.fillStyle = "#F5F6EB";
     ctx.fillRect(0, 0, width, height);
   }
 }
@@ -68,4 +68,3 @@ export function isCSEDepartment(deptName, facultyDeptName) {
   const match = (s) => s.includes('computer science') || s.includes('cse') || s.includes('computer engineering');
   return match(d1) || match(d2);
 }
-

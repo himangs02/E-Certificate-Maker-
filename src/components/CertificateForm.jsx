@@ -467,7 +467,7 @@ export default function CertificateForm({
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] font-mono uppercase tracking-wider opacity-75">Portrait A4</span>
+                        <span className="text-[10px] font-mono uppercase tracking-wider opacity-75">Landscape A4</span>
                         {(!templateImageInfo.isIdeathon && !templateImageInfo.isCustom) && (
                           <Check className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-600" />
                         )}

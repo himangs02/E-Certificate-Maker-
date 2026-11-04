@@ -463,7 +463,7 @@ export default function BatchGeneratorModal({
           ) : (
             <div className="p-2.5 bg-stone-50 dark:bg-zinc-950/60 border border-stone-200 dark:border-zinc-800 rounded-xl flex items-center justify-between text-zinc-600 dark:text-zinc-400">
               <span className="font-medium text-zinc-700 dark:text-zinc-300">
-                Active Template: {templateInfo.name || 'Geeta University Certificate of Appreciation'} (Portrait)
+                Active Template: {templateInfo.name || 'Geeta University Certificate of Appreciation'} (Landscape)
               </span>
               <span className="text-[11px] text-zinc-400">
                 Official Blank Layout
