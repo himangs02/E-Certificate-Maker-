@@ -739,7 +739,8 @@ ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO public.faculty_users (id, name, faculty_id, password, department, designation, email, status) VALUES
   ('fac-1', 'Faculty Member', 'faculty', 'geeta@123', 'Department of Arts & Humanities', 'Assistant Professor', 'faculty@geetauniversity.edu.in', 'Active'),
-  ('fac-2', 'Dr. Rahul Sharma', 'GU/FAC/001', 'geeta@123', 'Department of Computer Science & Engineering', 'Associate Professor', 'rahul.sharma@geetauniversity.edu.in', 'Active')
+  ('fac-2', 'Dr. Rahul Sharma', 'GU/FAC/001', 'geeta@123', 'Department of Computer Science & Engineering', 'Associate Professor', 'rahul.sharma@geetauniversity.edu.in', 'Active'),
+  ('fac-3', 'Faculty Member (CSE)', 'GU1842', 'geeta@789', 'Department of Computer Science & Engineering', 'Faculty Member', 'gu1842@geetauniversity.edu.in', 'Active')
 ON CONFLICT (faculty_id) DO NOTHING;`;
                     navigator.clipboard.writeText(sql);
                     setCopiedSql(true);

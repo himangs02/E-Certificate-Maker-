@@ -25,6 +25,7 @@ export default function CertificatePreview({
   config,
   onChangeConfig,
   baseImage,
+  templateInfo = {},
   showGuides,
   setShowGuides,
   activeField,

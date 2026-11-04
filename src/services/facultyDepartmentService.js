@@ -25,6 +25,17 @@ export const INITIAL_FACULTY = [
     createdAt: new Date().toISOString().split('T')[0]
   },
   {
+    id: 'fac-3',
+    name: 'Faculty Member (CSE)',
+    facultyId: 'GU1842',
+    password: 'geeta@789',
+    department: 'Department of Computer Science & Engineering',
+    designation: 'Faculty Member',
+    email: 'gu1842@geetauniversity.edu.in',
+    status: 'Active',
+    createdAt: new Date().toISOString().split('T')[0]
+  },
+  {
     id: 'fac-2',
     name: 'Dr. Rahul Sharma',
     facultyId: 'GU/FAC/001',
@@ -73,7 +84,34 @@ function getLocalFaculty() {
       return INITIAL_FACULTY;
     }
     const parsed = JSON.parse(data);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : INITIAL_FACULTY;
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      localStorage.setItem(STORAGE_KEYS.FACULTY, JSON.stringify(INITIAL_FACULTY));
+      return INITIAL_FACULTY;
+    }
+
+    // Merge any missing initial seed faculty accounts (e.g. GU1842) so updates take effect locally
+    let hasChanges = false;
+    const merged = [...parsed];
+    for (const initFac of INITIAL_FACULTY) {
+      const idx = merged.findIndex(f => 
+        (f.facultyId && f.facultyId.toLowerCase() === initFac.facultyId.toLowerCase())
+      );
+      if (idx === -1) {
+        merged.push(initFac);
+        hasChanges = true;
+      } else {
+        if (merged[idx].password !== initFac.password || merged[idx].department !== initFac.department) {
+          merged[idx] = { ...merged[idx], password: initFac.password, department: initFac.department };
+          hasChanges = true;
+        }
+      }
+    }
+
+    if (hasChanges) {
+      localStorage.setItem(STORAGE_KEYS.FACULTY, JSON.stringify(merged));
+    }
+
+    return merged;
   } catch {
     return INITIAL_FACULTY;
   }
@@ -386,7 +424,11 @@ export const authenticateFaculty = async (usernameOrId, password, selectedDepart
       const cleanSelected = selectedDepartment.trim().toLowerCase();
       const cleanActual = userDept.trim().toLowerCase();
       if (cleanSelected !== cleanActual) {
-        return 'Please select your correct department.';
+        const isCSE1 = cleanSelected.includes('computer science') || cleanSelected.includes('cse');
+        const isCSE2 = cleanActual.includes('computer science') || cleanActual.includes('cse');
+        if (!(isCSE1 && isCSE2)) {
+          return 'Please select your correct department.';
+        }
       }
     }
     return null;
