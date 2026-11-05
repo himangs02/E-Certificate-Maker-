@@ -1,5 +1,24 @@
 export const PRESETS = [
   {
+    id: "aasif-hackathon",
+    name: "Aasif · Smart India Hackathon",
+    subtitle: "Internal SIH Coordinator",
+    category: "Hackathon",
+    data: {
+      recipientName: "Aasif",
+      designation: "Student",
+      department: "BCA (Cyber Security)",
+      actionAchievement: "for coordinating and supporting the Internal Smart India Hackathon 2026 at Geeta University",
+      organizedByDate: "Issued by GTH",
+      appreciationParagraph: "Your dedication, enthusiasm and commitment towards excellence are sincerely appreciated. We congratulate you on this achievement and wish you continued success in all your future endeavours.",
+      issueDate: "08/10/2026",
+      refNumber: "GU/Pas/2026/005",
+      verification_code: "GU-2026-4J4BD8",
+      showDateLine: true,
+      showRefLine: true,
+    }
+  },
+  {
     id: "student-1st-pos",
     name: "Student · 1st Place",
     subtitle: "Tech Innovation Winner",
@@ -72,4 +91,3 @@ export const PRESETS = [
     }
   }
 ];
-

@@ -6,9 +6,9 @@ export const IDEATHON_TEMPLATE_URL = ideathonTemplateUrl;
 
 /**
  * Pixel-accurate blank base certificate template generator for Geeta University.
- * Uses the authentic high-resolution landscape base template image.
+ * Uses the authentic high-resolution base template image.
  */
-  export function drawDefaultTemplate(ctx, width = 1700, height = 1200) {
+export function drawDefaultTemplate(ctx, width = 1200, height = 1700) {
     const img = new Image();
     img.src = defaultTemplateUrl;
     if (img.complete && img.naturalWidth !== 0) {

@@ -53,7 +53,7 @@ export default function App() {
   // 1. Certificate Form State with unique verification code
   const [formData, setFormData] = useState(() => ({
     ...PRESETS[0].data,
-    verification_code: generateVerificationCode(),
+    verification_code: PRESETS[0].data.verification_code || generateVerificationCode(),
   }));
 
   // 2. Coordinate & Styling Config State

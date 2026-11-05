@@ -1,14 +1,14 @@
 /**
  * Default canvas coordinate and style configurations for certificate overlay text.
- * Base canvas resolution: 1700 x 1200 (A4 landscape standard ratio 1.4167:1)
+ * Base canvas resolution: 1200 x 1700 (A4 portrait standard ratio 1:1.4167)
  * 
  * You can adjust X, Y coordinates, font sizes, font families, and colors here
  * or dynamically inside the app using the Live Coordinate Tuner!
  */
 
 export const CANVAS_DIMENSIONS = {
-  width: 1700,
-  height: 1200,
+  width: 1200,
+  height: 1700,
 };
 
 export const IDEATHON_DIMENSIONS = {
@@ -21,9 +21,9 @@ export const DEFAULT_TEXT_CONFIG = {
   introLine: {
     label: "Introductory Line",
     text: "This certificate is proudly presented to",
-    x: 850, // Center aligned (1700 / 2)
-    y: 410, // Positioned cleanly below header
-    fontSize: 24,
+    x: 600, // Center aligned (1200 / 2)
+    y: 620, // Distance from top
+    fontSize: 23,
     fontFamily: "'Montserrat', sans-serif",
     fontWeight: "400",
     fontStyle: "normal",
@@ -35,12 +35,12 @@ export const DEFAULT_TEXT_CONFIG = {
   // 2. Recipient Name: Minimalist, authoritative, professional
   recipientName: {
     label: "Recipient Name",
-    x: 850, // Center aligned
-    y: 490,
-    fontSize: 54,
+    x: 600, // Center aligned
+    y: 690,
+    fontSize: 52,
     fontFamily: "'Montserrat', sans-serif",
     fontWeight: "700",
-    fontStyle: "normal",
+    fontStyle: "normal", // Clean, bold, upright sans-serif
     color: "#0F172A", // Deep obsidian slate
     align: "center",
     letterSpacing: 0.5,
@@ -49,8 +49,8 @@ export const DEFAULT_TEXT_CONFIG = {
   // 3. Designation / Class: "B.A. 2nd Semester" or "Assistant Professor"
   designation: {
     label: "Designation / Class",
-    x: 850,
-    y: 560,
+    x: 600,
+    y: 753,
     fontSize: 24,
     fontFamily: "'Montserrat', sans-serif",
     fontWeight: "500",
@@ -63,8 +63,8 @@ export const DEFAULT_TEXT_CONFIG = {
   // 4. Department: "Department of Arts & Humanities" or "School of Management"
   department: {
     label: "Department",
-    x: 850,
-    y: 615,
+    x: 600,
+    y: 810,
     fontSize: 24,
     fontFamily: "'Montserrat', sans-serif",
     fontWeight: "600",
@@ -77,54 +77,54 @@ export const DEFAULT_TEXT_CONFIG = {
   // 5. Action / Achievement: "for securing 1st Position in Tech Innovation Competition"
   actionAchievement: {
     label: "Action / Achievement Line",
-    x: 850,
-    y: 685,
+    x: 600,
+    y: 875,
     fontSize: 24,
     fontFamily: "'Plus Jakarta Sans', sans-serif",
     fontWeight: "500",
     fontStyle: "normal",
     color: "#0F172A",
     align: "center",
-    maxWidth: 1300,
+    maxWidth: 920,
     lineHeight: 38,
   },
 
   // 6. Organized By & Date Line: "organized by Department of Creative Arts & Media on September 15, 2026."
   organizedByDate: {
     label: "Organized By & Date",
-    x: 850,
-    y: 755,
+    x: 600,
+    y: 935,
     fontSize: 23,
     fontFamily: "'Plus Jakarta Sans', sans-serif",
     fontWeight: "400",
     fontStyle: "normal",
     color: "#475569",
     align: "center",
-    maxWidth: 1350,
+    maxWidth: 950,
     lineHeight: 38,
   },
 
   // 7. Appreciation Paragraph: 2-3 lines of text
   appreciationParagraph: {
     label: "Appreciation Paragraph",
-    x: 850,
-    y: 850,
-    fontSize: 21,
+    x: 600,
+    y: 1030,
+    fontSize: 22,
     fontFamily: "'Plus Jakarta Sans', sans-serif",
     fontWeight: "400",
     fontStyle: "normal",
     color: "#334155",
     align: "center",
-    maxWidth: 1300,
-    lineHeight: 38,
+    maxWidth: 940,
+    lineHeight: 40, // Balanced multi-line readability
   },
 
   // 8. Issue Date (Bottom Left): "Date: _______________"
   issueDate: {
     label: "Issue Date (Bottom Left)",
     prefix: "Date: ",
-    x: 160, // Left aligned near bottom border
-    y: 1040,
+    x: 135, // Left aligned near bottom border
+    y: 1475,
     fontSize: 22,
     fontFamily: "'Montserrat', sans-serif",
     fontWeight: "500",
@@ -138,8 +138,8 @@ export const DEFAULT_TEXT_CONFIG = {
   refNumber: {
     label: "Ref Number (Bottom Left)",
     prefix: "No. ",
-    x: 160, // Left aligned below Date
-    y: 1095,
+    x: 135, // Left aligned below Date
+    y: 1540,
     fontSize: 22,
     fontFamily: "'Montserrat', sans-serif",
     fontWeight: "500",
@@ -149,12 +149,12 @@ export const DEFAULT_TEXT_CONFIG = {
     underlineLength: 14,
   },
 
-  // 10. Security QR Code & Verification Stamp (Bottom Right)
+  // 10. Security QR Code & Verification Stamp (Top Right)
   qrCode: {
-    label: "Security QR Code (Bottom Right)",
-    x: 1540,
-    y: 980,
-    size: 130, // 130px square on 1700x1200 canvas
+    label: "Security QR Code (Top Right)",
+    x: 1035,
+    y: 135,
+    size: 115, // 115px crisp square on 1200x1700 canvas
     showCode: true,
     fontFamily: "'Montserrat', sans-serif",
     fontSize: 11,
